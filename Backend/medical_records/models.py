@@ -154,3 +154,136 @@ class MedicalNote(models.Model):
 
     def __str__(self):
         return f'Note by {self.auteur.email} for {self.medical_record.patient.user.email} on {self.created_at:%Y-%m-%d}'
+
+
+class TreatmentStatus(models.TextChoices):
+    ACTIVE = 'ACTIVE', _('Active')
+    STOPPED = 'STOPPED', _('Stopped')
+    COMPLETED = 'COMPLETED', _('Completed')
+
+
+class Treatment(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    medical_record = models.ForeignKey(
+        MedicalRecord,
+        on_delete=models.CASCADE,
+        related_name='treatments',
+        verbose_name=_('medical record'),
+    )
+    nom_medicament = models.CharField(_('medication name'), max_length=255)
+    description = models.TextField(_('description'), blank=True)
+    dosage = models.CharField(_('dosage'), max_length=255)
+    frequence = models.CharField(_('frequency'), max_length=255)
+    voie_administration = models.CharField(_('administration route'), max_length=255, blank=True)
+    date_debut = models.DateField(_('start date'))
+    date_fin = models.DateField(_('end date'), null=True, blank=True)
+    prescrit_par = models.ForeignKey(
+        'accounts.User',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='prescribed_treatments',
+        verbose_name=_('prescribed by'),
+    )
+    statut = models.CharField(
+        _('status'),
+        max_length=10,
+        choices=TreatmentStatus.choices,
+        default=TreatmentStatus.ACTIVE,
+    )
+    notes = models.TextField(_('notes'), blank=True)
+    created_at = models.DateTimeField(_('created at'), auto_now_add=True)
+    updated_at = models.DateTimeField(_('updated at'), auto_now=True)
+
+    class Meta:
+        verbose_name = _('treatment')
+        verbose_name_plural = _('treatments')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.nom_medicament} ({self.statut}) for {self.medical_record.patient.user.email}'
+
+
+class MedicalDocumentTypeChoices(models.TextChoices):
+    ORDONNANCE = 'ORDONNANCE', _('Ordonnance')
+    ANALYSE = 'ANALYSE', _('Analyse')
+    RADIO = 'RADIO', _('Radio')
+    COMPTE_RENDU = 'COMPTE_RENDU', _('Compte rendu')
+    CERTIFICAT = 'CERTIFICAT', _('Certificat')
+    AUTRE = 'AUTRE', _('Autre')
+
+
+class MedicalDocument(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    medical_record = models.ForeignKey(
+        MedicalRecord,
+        on_delete=models.CASCADE,
+        related_name='documents',
+        verbose_name=_('medical record'),
+    )
+    titre = models.CharField(_('title'), max_length=255)
+    type_document = models.CharField(
+        _('document type'),
+        max_length=20,
+        choices=MedicalDocumentTypeChoices.choices,
+        default=MedicalDocumentTypeChoices.AUTRE,
+    )
+    fichier = models.FileField(_('file'), upload_to='medical_documents/')
+    description = models.TextField(_('description'), blank=True)
+    date_document = models.DateField(_('document date'))
+    uploaded_by = models.ForeignKey(
+        'accounts.User',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='medical_documents',
+        verbose_name=_('uploaded by'),
+    )
+    created_at = models.DateTimeField(_('created at'), auto_now_add=True)
+    updated_at = models.DateTimeField(_('updated at'), auto_now=True)
+
+    class Meta:
+        verbose_name = _('medical document')
+        verbose_name_plural = _('medical documents')
+        ordering = ['-date_document']
+        indexes = [
+            models.Index(fields=['medical_record', 'date_document']),
+        ]
+
+    def __str__(self):
+        return f'{self.titre} ({self.get_type_document_display()}) for {self.medical_record.patient.user.email} on {self.date_document:%Y-%m-%d}'
+
+
+class Consultation(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    patient = models.ForeignKey(
+        'profiles.PatientProfile',
+        on_delete=models.CASCADE,
+        related_name='consultations',
+        verbose_name=_('patient profile'),
+    )
+    medecin = models.ForeignKey(
+        'profiles.DoctorProfile',
+        on_delete=models.CASCADE,
+        related_name='consultations_medecin',
+        verbose_name=_('doctor profile'),
+    )
+    date_consultation = models.DateTimeField(_('consultation date'))
+    motif = models.TextField(_('reason'))
+    diagnostic = models.TextField(_('diagnosis'), blank=True)
+    symptomes = models.TextField(_('symptoms'), blank=True)
+    observations = models.TextField(_('observations'), blank=True)
+    notes = models.TextField(_('notes'), blank=True)
+    created_at = models.DateTimeField(_('created at'), auto_now_add=True)
+    updated_at = models.DateTimeField(_('updated at'), auto_now=True)
+
+    class Meta:
+        verbose_name = _('consultation')
+        verbose_name_plural = _('consultations')
+        ordering = ['-date_consultation']
+        indexes = [
+            models.Index(fields=['patient', 'date_consultation']),
+        ]
+
+    def __str__(self):
+        return f'Consultation on {self.date_consultation:%Y-%m-%d %H:%M} - {self.patient.user.email} - Dr {self.medecin.user.email}'
