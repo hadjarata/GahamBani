@@ -1,4 +1,5 @@
 import uuid
+from decimal import Decimal
 
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
@@ -65,15 +66,15 @@ class BloodPressure(models.Model):
     )
     systolique = models.PositiveIntegerField(
         _('systolic'),
-        validators=[MinValueValidator(90), MaxValueValidator(250)],
+        validators=[MinValueValidator(40), MaxValueValidator(300)],
     )
     diastolique = models.PositiveIntegerField(
         _('diastolic'),
-        validators=[MinValueValidator(40), MaxValueValidator(150)],
+        validators=[MinValueValidator(20), MaxValueValidator(200)],
     )
     frequence_cardiaque = models.PositiveIntegerField(
         _('heart rate'),
-        validators=[MinValueValidator(30), MaxValueValidator(220)],
+        validators=[MinValueValidator(20), MaxValueValidator(300)],
         null=True,
         blank=True,
     )
@@ -123,6 +124,18 @@ class BloodPressure(models.Model):
     def __str__(self):
         return f'BP {self.systolique}/{self.diastolique} for {self.patient.user.email} on {self.date_mesure:%Y-%m-%d %H:%M}'
 
+    def clean(self):
+        """Reject internally inconsistent data without hiding dangerous values."""
+        super().clean()
+        errors = {}
+        if self.systolique is not None and self.diastolique is not None:
+            if self.systolique <= self.diastolique:
+                errors['systolique'] = _('Systolic pressure must be higher than diastolic pressure.')
+        if self.date_mesure and self.date_mesure > timezone.now():
+            errors['date_mesure'] = _('The measurement date cannot be in the future.')
+        if errors:
+            raise ValidationError(errors)
+
 
 class BloodGlucose(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -136,7 +149,7 @@ class BloodGlucose(models.Model):
         _('value'),
         max_digits=6,
         decimal_places=2,
-        validators=[MinValueValidator(0.1), MaxValueValidator(1000)],
+        validators=[MinValueValidator(Decimal('0.1')), MaxValueValidator(Decimal('1500'))],
     )
     unite = models.CharField(
         _('unit'),
@@ -160,7 +173,7 @@ class BloodGlucose(models.Model):
         _('HbA1c'),
         max_digits=4,
         decimal_places=2,
-        validators=[MinValueValidator(0), MaxValueValidator(20)],
+        validators=[MinValueValidator(Decimal('1')), MaxValueValidator(Decimal('25'))],
         null=True,
         blank=True,
     )
@@ -200,16 +213,25 @@ class BloodGlucose(models.Model):
         """Validate the consistency between measurement type and meal context."""
         super().clean()
 
+        errors = {}
+
+        if self.unite == GlucoseUnit.G_PER_L and self.valeur is not None:
+            if not Decimal('0.1') <= self.valeur <= Decimal('15'):
+                errors['valeur'] = _('A value in g/L must be between 0.1 and 15.')
+        elif self.unite == GlucoseUnit.MG_PER_DL and self.valeur is not None:
+            if not Decimal('10') <= self.valeur <= Decimal('1500'):
+                errors['valeur'] = _('A value in mg/dL must be between 10 and 1500.')
+
         if self.type_mesure == GlucoseType.FASTING and self.contexte_repas != MealContext.BEFORE_MEAL:
-            raise ValidationError({
-                'contexte_repas': _(
-                    'A fasting measurement must be recorded before a meal.'
-                ),
-            })
+            errors['contexte_repas'] = _(
+                'A fasting measurement must be recorded before a meal.'
+            )
 
         if self.type_mesure == GlucoseType.POST_MEAL and self.contexte_repas != MealContext.AFTER_MEAL:
-            raise ValidationError({
-                'contexte_repas': _(
-                    'A post-meal measurement must be recorded after a meal.'
-                ),
-            })
+            errors['contexte_repas'] = _(
+                'A post-meal measurement must be recorded after a meal.'
+            )
+        if self.date_mesure and self.date_mesure > timezone.now():
+            errors['date_mesure'] = _('The measurement date cannot be in the future.')
+        if errors:
+            raise ValidationError(errors)

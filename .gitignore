@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+.venv/
+venv/
+Backend/venv/
+
+# Local configuration and generated files
+.env
+Backend/.env
+media/
+Backend/media/
+
+# Test and tooling caches
+.coverage
+.pytest_cache/
+.mypy_cache/
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

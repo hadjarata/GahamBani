@@ -1,16 +1,26 @@
-from .models import MedicalAlert
+from .models import AlertStatus, MedicalAlert
 
 
 class AlertService:
-    """Placeholder for alert creation and retrieval logic."""
+    """Centralize medical-alert creation."""
 
     @staticmethod
-    def create_alert(patient, type, niveau, message, source, is_read=False):
-        return MedicalAlert.objects.create(
+    def create_alert(
+        patient,
+        alert_type,
+        niveau,
+        message,
+        source,
+        status=AlertStatus.NEW,
+    ):
+        alert = MedicalAlert(
             patient=patient,
-            type=type,
+            type=alert_type,
             niveau=niveau,
             message=message,
             source=source,
-            is_read=is_read,
+            status=status,
         )
+        alert.full_clean()
+        alert.save()
+        return alert

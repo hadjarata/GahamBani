@@ -5,10 +5,13 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .serializers import (
+    ChangePasswordSerializer,
     LoginSerializer,
     LoginUserSerializer,
     LogoutSerializer,
     MeSerializer,
+    PasswordResetConfirmSerializer,
+    PasswordResetSerializer,
     PublicUserSerializer,
     RegisterSerializer,
 )
@@ -82,3 +85,47 @@ class LogoutView(GenericAPIView):
         serializer.save()
 
         return Response({'message': 'Logout successful.'}, status=status.HTTP_200_OK)
+
+
+class ChangePasswordView(GenericAPIView):
+    """Change the authenticated user's password after validating the old one."""
+
+    serializer_class = ChangePasswordSerializer
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            {'message': 'Password changed successfully.'},
+            status=status.HTTP_200_OK,
+        )
+
+
+class PasswordResetView(GenericAPIView):
+    """Generate password-reset credentials for an active account."""
+
+    serializer_class = PasswordResetSerializer
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return Response(serializer.save(), status=status.HTTP_200_OK)
+
+
+class PasswordResetConfirmView(GenericAPIView):
+    """Set a new password using valid Django reset credentials."""
+
+    serializer_class = PasswordResetConfirmSerializer
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            {'message': 'Password reset successful.'},
+            status=status.HTTP_200_OK,
+        )
