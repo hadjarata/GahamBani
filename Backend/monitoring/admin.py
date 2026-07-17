@@ -17,6 +17,9 @@ class BloodPressureAdmin(admin.ModelAdmin):
     )
     search_fields = ('patient__user__email', 'patient__user__first_name', 'patient__user__last_name')
     list_filter = ('source_mesure', 'measurement_context', 'position', 'bras_utilise')
+    autocomplete_fields = ('patient',)
+    readonly_fields = ('created_at', 'updated_at')
+    list_select_related = ('patient__user',)
 
 
 @admin.register(BloodGlucose)
@@ -34,6 +37,8 @@ class BloodGlucoseAdmin(admin.ModelAdmin):
     )
     search_fields = ('patient__user__email', 'patient__user__first_name', 'patient__user__last_name')
     list_filter = ('unite', 'type_mesure', 'contexte_repas', 'type_prelevement', 'source_mesure')
+    autocomplete_fields = ('patient',)
+    list_select_related = ('patient__user',)
     readonly_fields = ('created_at', 'updated_at')
     fieldsets = (
         (None, {

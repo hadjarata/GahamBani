@@ -16,8 +16,34 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularRedocView,
+    SpectacularSwaggerView,
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/schema/', SpectacularAPIView.as_view(urlconf='config.legacy_api_urls'), name='schema'),
+    path('api/schema/v1/', SpectacularAPIView.as_view(urlconf='config.api_v1_contract_urls'), name='schema-v1'),
+    path(
+        'api/docs/',
+        SpectacularSwaggerView.as_view(url_name='schema'),
+        name='swagger-ui',
+    ),
+    path(
+        'api/redoc/',
+        SpectacularRedocView.as_view(url_name='schema'),
+        name='redoc',
+    ),
+    path('api/docs/v1/', SpectacularSwaggerView.as_view(url_name='schema-v1'), name='swagger-ui-v1'),
+    path('api/redoc/v1/', SpectacularRedocView.as_view(url_name='schema-v1'), name='redoc-v1'),
+    path('api/v1/', include(('config.api_v1_urls', 'api-v1'), namespace='api-v1')),
     path('api/auth/', include('accounts.urls')),
+    path('api/profiles/', include('profiles.urls')),
+    path('api/monitoring/', include('monitoring.urls')),
+    path('api/medical-records/', include('medical_records.urls')),
+    path('api/alerts/', include('alerts.urls')),
+    path('api/notifications/', include('notifications.urls')),
+    path('api/analytics/', include('analytics.urls')),
 ]

@@ -60,7 +60,7 @@ class BloodPressure(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     patient = models.ForeignKey(
         'profiles.PatientProfile',
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name='blood_pressures',
         verbose_name=_('patient profile'),
     )
@@ -74,7 +74,7 @@ class BloodPressure(models.Model):
     )
     frequence_cardiaque = models.PositiveIntegerField(
         _('heart rate'),
-        validators=[MinValueValidator(20), MaxValueValidator(300)],
+        validators=[MinValueValidator(20), MaxValueValidator(250)],
         null=True,
         blank=True,
     )
@@ -107,7 +107,6 @@ class BloodPressure(models.Model):
         null=True,
         blank=True,
     )
-    commentaire = models.TextField(_('comment'), blank=True)
     notes = models.TextField(_('notes'), blank=True)
     date_mesure = models.DateTimeField(_('measurement date'))
     created_at = models.DateTimeField(_('created at'), auto_now_add=True)
@@ -118,7 +117,31 @@ class BloodPressure(models.Model):
         verbose_name_plural = _('blood pressures')
         ordering = ['-date_mesure', '-created_at']
         indexes = [
-            models.Index(fields=['patient', 'date_mesure']),
+            models.Index(
+                fields=['patient', '-date_mesure'],
+                name='mon_bp_patient_date_idx',
+            ),
+        ]
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(systolique__gte=40, systolique__lte=300),
+                name='bp_systolic_technical_range',
+            ),
+            models.CheckConstraint(
+                condition=models.Q(diastolique__gte=20, diastolique__lte=200),
+                name='bp_diastolic_technical_range',
+            ),
+            models.CheckConstraint(
+                condition=models.Q(systolique__gt=models.F('diastolique')),
+                name='bp_systolic_above_diastolic',
+            ),
+            models.CheckConstraint(
+                condition=(
+                    models.Q(frequence_cardiaque__isnull=True)
+                    | models.Q(frequence_cardiaque__gte=20, frequence_cardiaque__lte=250)
+                ),
+                name='bp_heart_rate_technical_range',
+            ),
         ]
 
     def __str__(self):
@@ -128,6 +151,13 @@ class BloodPressure(models.Model):
         """Reject internally inconsistent data without hiding dangerous values."""
         super().clean()
         errors = {}
+        if self.patient_id:
+            from accounts.models import UserRole
+
+            if self.patient.user.role != UserRole.PATIENT:
+                errors['patient'] = _('The profile user must have the patient role.')
+            elif not self.patient.user.is_active:
+                errors['patient'] = _('The patient user must be active.')
         if self.systolique is not None and self.diastolique is not None:
             if self.systolique <= self.diastolique:
                 errors['systolique'] = _('Systolic pressure must be higher than diastolic pressure.')
@@ -141,7 +171,7 @@ class BloodGlucose(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     patient = models.ForeignKey(
         'profiles.PatientProfile',
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name='blood_glucoses',
         verbose_name=_('patient profile'),
     )
@@ -200,7 +230,34 @@ class BloodGlucose(models.Model):
         verbose_name_plural = _('blood glucoses')
         ordering = ['-date_mesure', '-created_at']
         indexes = [
-            models.Index(fields=['patient', 'date_mesure']),
+            models.Index(
+                fields=['patient', '-date_mesure'],
+                name='mon_bg_patient_date_idx',
+            ),
+        ]
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    models.Q(
+                        unite=GlucoseUnit.G_PER_L,
+                        valeur__gte=Decimal('0.1'),
+                        valeur__lte=Decimal('15'),
+                    )
+                    | models.Q(
+                        unite=GlucoseUnit.MG_PER_DL,
+                        valeur__gte=Decimal('10'),
+                        valeur__lte=Decimal('1500'),
+                    )
+                ),
+                name='bg_value_matches_unit_range',
+            ),
+            models.CheckConstraint(
+                condition=(
+                    models.Q(hba1c__isnull=True)
+                    | models.Q(hba1c__gte=Decimal('1'), hba1c__lte=Decimal('25'))
+                ),
+                name='bg_hba1c_technical_range',
+            ),
         ]
 
     def __str__(self):
@@ -214,6 +271,14 @@ class BloodGlucose(models.Model):
         super().clean()
 
         errors = {}
+
+        if self.patient_id:
+            from accounts.models import UserRole
+
+            if self.patient.user.role != UserRole.PATIENT:
+                errors['patient'] = _('The profile user must have the patient role.')
+            elif not self.patient.user.is_active:
+                errors['patient'] = _('The patient user must be active.')
 
         if self.unite == GlucoseUnit.G_PER_L and self.valeur is not None:
             if not Decimal('0.1') <= self.valeur <= Decimal('15'):

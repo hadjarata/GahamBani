@@ -2,6 +2,7 @@ import uuid
 
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.contrib.auth.models import PermissionsMixin
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -59,6 +60,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_verified = models.BooleanField(_('verified'), default=False)
     is_active = models.BooleanField(_('active'), default=True)
     is_staff = models.BooleanField(_('staff status'), default=False)
+    token_version = models.PositiveIntegerField(default=0, editable=False)
     created_at = models.DateTimeField(_('created at'), default=timezone.now)
     updated_at = models.DateTimeField(_('updated at'), auto_now=True)
 
@@ -74,3 +76,32 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+
+    def clean(self):
+        super().clean()
+        self._validate_role_profile_compatibility()
+
+    def save(self, *args, **kwargs):
+        update_fields = kwargs.get('update_fields')
+        role_may_change = update_fields is None or 'role' in update_fields
+        if self.pk and not self._state.adding and role_may_change:
+            previous_role = type(self).objects.filter(pk=self.pk).values_list(
+                'role',
+                flat=True,
+            ).first()
+            if previous_role is not None and previous_role != self.role:
+                self._validate_role_profile_compatibility()
+        return super().save(*args, **kwargs)
+
+    def _validate_role_profile_compatibility(self):
+        """Prevent silent role changes that orphan domain-specific profiles."""
+        if not self.pk:
+            return
+
+        errors = []
+        if self.role != UserRole.PATIENT and hasattr(self, 'patient_profile'):
+            errors.append(_('A user with a patient profile must keep the patient role.'))
+        if self.role != UserRole.DOCTOR and hasattr(self, 'doctor_profile'):
+            errors.append(_('A user with a doctor profile must keep the doctor role.'))
+        if errors:
+            raise ValidationError({'role': errors})

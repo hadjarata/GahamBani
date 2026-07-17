@@ -17,19 +17,32 @@ class PatientProfile(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.OneToOneField(
         'accounts.User',
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name='patient_profile',
         verbose_name=_('user'),
     )
-    date_naissance = models.DateField(_('date of birth'))
+    date_naissance = models.DateField(_('date of birth'), blank=True, null=True)
     sexe = models.CharField(
         _('sex'),
         max_length=10,
         choices=SexChoices.choices,
-        default=SexChoices.OTHER,
+        blank=True,
+        null=True,
     )
-    poids = models.DecimalField(_('weight'), max_digits=6, decimal_places=2)
-    taille = models.DecimalField(_('height'), max_digits=5, decimal_places=2)
+    poids = models.DecimalField(
+        _('weight'),
+        max_digits=6,
+        decimal_places=2,
+        blank=True,
+        null=True,
+    )
+    taille = models.DecimalField(
+        _('height'),
+        max_digits=5,
+        decimal_places=2,
+        blank=True,
+        null=True,
+    )
     antecedents = models.TextField(_('medical history'), blank=True)
     created_at = models.DateTimeField(_('created at'), default=timezone.now)
     updated_at = models.DateTimeField(_('updated at'), auto_now=True)
@@ -38,9 +51,6 @@ class PatientProfile(models.Model):
         verbose_name = _('patient profile')
         verbose_name_plural = _('patient profiles')
         ordering = ['-created_at']
-        constraints = [
-            models.UniqueConstraint(fields=['user'], name='unique_patient_profile_user'),
-        ]
 
     def __str__(self):
         return f'Patient profile for {self.user.email}'
@@ -51,13 +61,15 @@ class PatientProfile(models.Model):
 
         if self.user_id and self.user.role != UserRole.PATIENT:
             raise ValidationError({'user': _('The selected user must have the patient role.')})
+        if self.user_id and hasattr(self.user, 'doctor_profile'):
+            raise ValidationError({'user': _('This user already has a doctor profile.')})
 
 
 class DoctorProfile(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.OneToOneField(
         'accounts.User',
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name='doctor_profile',
         verbose_name=_('user'),
     )
@@ -79,9 +91,6 @@ class DoctorProfile(models.Model):
         verbose_name = _('doctor profile')
         verbose_name_plural = _('doctor profiles')
         ordering = ['-created_at']
-        constraints = [
-            models.UniqueConstraint(fields=['user'], name='unique_doctor_profile_user'),
-        ]
 
     def __str__(self):
         return f'Doctor profile for {self.user.email}'
@@ -92,6 +101,8 @@ class DoctorProfile(models.Model):
 
         if self.user_id and self.user.role != UserRole.DOCTOR:
             raise ValidationError({'user': _('The selected user must have the doctor role.')})
+        if self.user_id and hasattr(self.user, 'patient_profile'):
+            raise ValidationError({'user': _('This user already has a patient profile.')})
 
 
 class AssignmentStatus(models.TextChoices):
@@ -105,13 +116,13 @@ class PatientDoctorAssignment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     patient = models.ForeignKey(
         PatientProfile,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name='doctor_assignments',
         verbose_name=_('patient profile'),
     )
     doctor = models.ForeignKey(
         DoctorProfile,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name='patient_assignments',
         verbose_name=_('doctor profile'),
     )
@@ -134,7 +145,8 @@ class PatientDoctorAssignment(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=['patient', 'doctor'],
-                name='unique_patient_doctor_assignment',
+                condition=Q(status=AssignmentStatus.ACTIVE),
+                name='unique_active_patient_doctor_assignment',
             ),
             models.CheckConstraint(
                 condition=(
@@ -143,21 +155,54 @@ class PatientDoctorAssignment(models.Model):
                 ),
                 name='assignment_status_matches_end_date',
             ),
+            models.CheckConstraint(
+                condition=Q(ended_at__isnull=True) | Q(ended_at__gte=models.F('assigned_at')),
+                name='assignment_end_not_before_start',
+            ),
         ]
         indexes = [
             models.Index(fields=['doctor', 'status'], name='prof_assign_doc_status_idx'),
             models.Index(fields=['patient', 'status'], name='prof_assign_pat_status_idx'),
+            models.Index(
+                fields=['patient', 'doctor', '-assigned_at'],
+                name='prof_assign_pair_hist_idx',
+            ),
         ]
 
     def clean(self):
         super().clean()
         errors = {}
+        if self.patient_id and self.doctor_id:
+            from accounts.models import UserRole
+
+            patient_user = self.patient.user
+            doctor_user = self.doctor.user
+            if patient_user.role != UserRole.PATIENT:
+                errors['patient'] = _('The patient profile user must have the patient role.')
+            elif not patient_user.is_active:
+                errors['patient'] = _('The patient user must be active.')
+            if doctor_user.role != UserRole.DOCTOR:
+                errors['doctor'] = _('The doctor profile user must have the doctor role.')
+            elif not doctor_user.is_active:
+                errors['doctor'] = _('The doctor user must be active.')
+            if patient_user.pk == doctor_user.pk:
+                errors['doctor'] = _('A patient cannot be assigned to themselves.')
+
         if self.status == AssignmentStatus.ACTIVE and self.ended_at is not None:
             errors['ended_at'] = _('An active assignment cannot have an end date.')
         elif self.status == AssignmentStatus.ENDED and self.ended_at is None:
             errors['ended_at'] = _('An ended assignment must have an end date.')
         if self.ended_at and self.assigned_at and self.ended_at < self.assigned_at:
             errors['ended_at'] = _('The end date cannot be earlier than the assignment date.')
+        if self.pk:
+            previous_status = type(self).objects.filter(pk=self.pk).values_list(
+                'status',
+                flat=True,
+            ).first()
+            if previous_status == AssignmentStatus.ENDED and self.status == AssignmentStatus.ACTIVE:
+                errors['status'] = _(
+                    'An ended assignment cannot be reactivated; create a new assignment.',
+                )
         if errors:
             raise ValidationError(errors)
 

@@ -1,0 +1,6540 @@
+openapi: 3.0.3
+info:
+  title: GahamBani API
+  version: 1.0.0
+  description: Documentation de l'API GahamBani. Le Domaine 1 couvre l'authentification
+    et la gestion du compte utilisateur.
+paths:
+  /api/v1/alerts/:
+    get:
+      operationId: api_v1_alerts_list
+      summary: Lister les alertes accessibles
+      parameters:
+      - in: query
+        name: date_from
+        schema:
+          type: string
+      - in: query
+        name: date_to
+        schema:
+          type: string
+      - in: query
+        name: ordering
+        schema:
+          type: string
+          enum:
+          - -detected_at
+          - -severity
+          - detected_at
+          - severity
+      - in: query
+        name: page
+        schema:
+          type: integer
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: Maximum 100.
+      - in: query
+        name: patient_id
+        schema:
+          type: string
+          format: uuid
+        description: Médecins uniquement.
+      - in: query
+        name: rule_code
+        schema:
+          type: string
+      - in: query
+        name: severity
+        schema:
+          type: string
+          enum:
+          - CRITICAL
+          - HIGH
+          - INFO
+          - LOW
+          - MEDIUM
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - ACKNOWLEDGED
+          - DISMISSED
+          - OPEN
+          - RESOLVED
+      tags:
+      - Alerts
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMedicalAlertList'
+          description: ''
+        '400':
+          description: Filtre, transition ou motif invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Rôle ou affectation insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Alerte inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '405':
+          description: Méthode désactivée.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/alerts/{id}/:
+    get:
+      operationId: api_v1_alerts_retrieve
+      summary: Consulter une alerte
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this medical alert.
+        required: true
+      tags:
+      - Alerts
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MedicalAlert'
+          description: ''
+        '400':
+          description: Filtre, transition ou motif invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Rôle ou affectation insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Alerte inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '405':
+          description: Méthode désactivée.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/alerts/{id}/acknowledge/:
+    patch:
+      operationId: api_v1_alerts_acknowledge_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this medical alert.
+        required: true
+      tags:
+      - Alerts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAlertTransitionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAlertTransitionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAlertTransitionRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MedicalAlert'
+          description: ''
+        '400':
+          description: Filtre, transition ou motif invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Rôle ou affectation insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Alerte inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '405':
+          description: Méthode désactivée.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/alerts/{id}/dismiss/:
+    patch:
+      operationId: api_v1_alerts_dismiss_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this medical alert.
+        required: true
+      tags:
+      - Alerts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAlertTransitionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAlertTransitionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAlertTransitionRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MedicalAlert'
+          description: ''
+        '400':
+          description: Filtre, transition ou motif invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Rôle ou affectation insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Alerte inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '405':
+          description: Méthode désactivée.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/alerts/{id}/resolve/:
+    patch:
+      operationId: api_v1_alerts_resolve_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this medical alert.
+        required: true
+      tags:
+      - Alerts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAlertTransitionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAlertTransitionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAlertTransitionRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MedicalAlert'
+          description: ''
+        '400':
+          description: Filtre, transition ou motif invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Rôle ou affectation insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Alerte inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '405':
+          description: Méthode désactivée.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/analytics/alerts/:
+    get:
+      operationId: api_v1_analytics_alerts_retrieve
+      description: Aucun message médical complet n’est renvoyé.
+      summary: Résumé analytique des alertes
+      parameters:
+      - in: query
+        name: date_from
+        schema:
+          type: string
+        description: Borne UTC inclusive ISO 8601.
+      - in: query
+        name: date_to
+        schema:
+          type: string
+        description: Borne UTC inclusive ISO 8601.
+      - in: query
+        name: patient_id
+        schema:
+          type: string
+          format: uuid
+        description: Obligatoire pour un médecin; interdit au patient.
+      - in: query
+        name: period
+        schema:
+          type: string
+          enum:
+          - 1y
+          - 30d
+          - 6m
+          - 7d
+          - 90d
+          - custom
+        description: 30d par défaut. custom exige les deux dates.
+      tags:
+      - Analytics
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlertsAnalytics'
+          description: ''
+        '400':
+          description: Paramètres temporels ou analytiques invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Compte, rôle ou profil insuffisant.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Patient inexistant ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '405':
+          description: API strictement en lecture seule.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/analytics/blood-glucose/:
+    get:
+      operationId: api_v1_analytics_blood_glucose_retrieve
+      description: Toutes les valeurs analytiques sont en MG_PER_DL (1 g/L = 100 mg/dL).
+      summary: Série de glycémie normalisée
+      parameters:
+      - in: query
+        name: context
+        schema:
+          type: string
+          enum:
+          - AFTER_MEAL
+          - BEFORE_MEAL
+          - NO_MEAL
+      - in: query
+        name: date_from
+        schema:
+          type: string
+        description: Borne UTC inclusive ISO 8601.
+      - in: query
+        name: date_to
+        schema:
+          type: string
+        description: Borne UTC inclusive ISO 8601.
+      - in: query
+        name: granularity
+        schema:
+          type: string
+          enum:
+          - day
+          - month
+          - raw
+          - week
+      - in: query
+        name: ordering
+        schema:
+          type: string
+          enum:
+          - asc
+          - desc
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Séries raw uniquement.
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: Séries raw uniquement, maximum 100.
+      - in: query
+        name: patient_id
+        schema:
+          type: string
+          format: uuid
+        description: Obligatoire pour un médecin; interdit au patient.
+      - in: query
+        name: period
+        schema:
+          type: string
+          enum:
+          - 1y
+          - 30d
+          - 6m
+          - 7d
+          - 90d
+          - custom
+        description: 30d par défaut. custom exige les deux dates.
+      tags:
+      - Analytics
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BloodGlucoseSeriesResponse'
+          description: ''
+        '400':
+          description: Paramètres temporels ou analytiques invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Compte, rôle ou profil insuffisant.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Patient inexistant ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '405':
+          description: API strictement en lecture seule.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/analytics/blood-pressure/:
+    get:
+      operationId: api_v1_analytics_blood_pressure_retrieve
+      description: mmHg; les intervalles sans mesure sont omis. Les séries raw sont
+        paginées.
+      summary: Série de tension
+      parameters:
+      - in: query
+        name: date_from
+        schema:
+          type: string
+        description: Borne UTC inclusive ISO 8601.
+      - in: query
+        name: date_to
+        schema:
+          type: string
+        description: Borne UTC inclusive ISO 8601.
+      - in: query
+        name: granularity
+        schema:
+          type: string
+          enum:
+          - day
+          - month
+          - raw
+          - week
+      - in: query
+        name: ordering
+        schema:
+          type: string
+          enum:
+          - asc
+          - desc
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Séries raw uniquement.
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: Séries raw uniquement, maximum 100.
+      - in: query
+        name: patient_id
+        schema:
+          type: string
+          format: uuid
+        description: Obligatoire pour un médecin; interdit au patient.
+      - in: query
+        name: period
+        schema:
+          type: string
+          enum:
+          - 1y
+          - 30d
+          - 6m
+          - 7d
+          - 90d
+          - custom
+        description: 30d par défaut. custom exige les deux dates.
+      tags:
+      - Analytics
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BloodPressureSeriesResponse'
+          description: ''
+        '400':
+          description: Paramètres temporels ou analytiques invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Compte, rôle ou profil insuffisant.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Patient inexistant ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '405':
+          description: API strictement en lecture seule.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/analytics/hba1c/:
+    get:
+      operationId: api_v1_analytics_hba1c_retrieve
+      description: Valeurs en %. Série brute paginée; la tendance compare chaque point
+        au précédent dans la page.
+      summary: Série HbA1c
+      parameters:
+      - in: query
+        name: date_from
+        schema:
+          type: string
+        description: Borne UTC inclusive ISO 8601.
+      - in: query
+        name: date_to
+        schema:
+          type: string
+        description: Borne UTC inclusive ISO 8601.
+      - in: query
+        name: ordering
+        schema:
+          type: string
+          enum:
+          - asc
+          - desc
+      - in: query
+        name: page
+        schema:
+          type: integer
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: Maximum 100.
+      - in: query
+        name: patient_id
+        schema:
+          type: string
+          format: uuid
+        description: Obligatoire pour un médecin; interdit au patient.
+      - in: query
+        name: period
+        schema:
+          type: string
+          enum:
+          - 1y
+          - 30d
+          - 6m
+          - 7d
+          - 90d
+          - custom
+        description: 30d par défaut. custom exige les deux dates.
+      tags:
+      - Analytics
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Hba1cSeries'
+          description: ''
+        '400':
+          description: Paramètres temporels ou analytiques invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Compte, rôle ou profil insuffisant.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Patient inexistant ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '405':
+          description: API strictement en lecture seule.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/analytics/summary/:
+    get:
+      operationId: api_v1_analytics_summary_retrieve
+      description: 'Calculs descriptifs, non diagnostiques. Patient : son propre dossier.
+        Médecin : patient actuellement affecté.'
+      summary: Résumé analytique patient
+      parameters:
+      - in: query
+        name: date_from
+        schema:
+          type: string
+        description: Borne UTC inclusive ISO 8601.
+      - in: query
+        name: date_to
+        schema:
+          type: string
+        description: Borne UTC inclusive ISO 8601.
+      - in: query
+        name: patient_id
+        schema:
+          type: string
+          format: uuid
+        description: Obligatoire pour un médecin; interdit au patient.
+      - in: query
+        name: period
+        schema:
+          type: string
+          enum:
+          - 1y
+          - 30d
+          - 6m
+          - 7d
+          - 90d
+          - custom
+        description: 30d par défaut. custom exige les deux dates.
+      tags:
+      - Analytics
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Summary'
+          description: ''
+        '400':
+          description: Paramètres temporels ou analytiques invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Compte, rôle ou profil insuffisant.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Patient inexistant ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '405':
+          description: API strictement en lecture seule.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/analytics/trends/:
+    get:
+      operationId: api_v1_analytics_trends_retrieve
+      description: Compare deux fenêtres consécutives de sept jours. INSufficient
+        data sous le minimum configurable. Ne qualifie jamais médicalement la variation.
+      summary: Tendances descriptives
+      parameters:
+      - in: query
+        name: date_from
+        schema:
+          type: string
+        description: Borne UTC inclusive ISO 8601.
+      - in: query
+        name: date_to
+        schema:
+          type: string
+        description: Borne UTC inclusive ISO 8601.
+      - in: query
+        name: patient_id
+        schema:
+          type: string
+          format: uuid
+        description: Obligatoire pour un médecin; interdit au patient.
+      - in: query
+        name: period
+        schema:
+          type: string
+          enum:
+          - 1y
+          - 30d
+          - 6m
+          - 7d
+          - 90d
+          - custom
+        description: 30d par défaut. custom exige les deux dates.
+      tags:
+      - Analytics
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Trends'
+          description: ''
+        '400':
+          description: Paramètres temporels ou analytiques invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Compte, rôle ou profil insuffisant.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Patient inexistant ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '405':
+          description: API strictement en lecture seule.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/auth/change-password/:
+    post:
+      operationId: auth_change_password
+      description: Change the authenticated user's password after validating the old
+        one.
+      summary: Changer son mot de passe
+      tags:
+      - Domaine 1 - Authentification
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+          description: ''
+        '400':
+          description: Requête invalide ou erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise ou invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '429':
+          description: Limite de requêtes dépassée. Le délai est indiqué par DRF lorsque
+            disponible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/auth/login/:
+    post:
+      operationId: auth_login
+      description: Authentifie un utilisateur par e-mail et retourne une paire de
+        jetons JWT.
+      summary: Se connecter
+      tags:
+      - Domaine 1 - Authentification
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+          description: ''
+        '400':
+          description: Requête invalide ou erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '429':
+          description: Limite de requêtes dépassée. Le délai est indiqué par DRF lorsque
+            disponible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/auth/logout/:
+    post:
+      operationId: auth_logout
+      description: Place le jeton de rafraîchissement fourni sur la liste noire.
+      summary: Se déconnecter
+      tags:
+      - Domaine 1 - Authentification
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+          description: ''
+        '400':
+          description: Requête invalide ou erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise ou invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '429':
+          description: Limite de requêtes dépassée. Le délai est indiqué par DRF lorsque
+            disponible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/auth/me/:
+    get:
+      operationId: auth_me_retrieve
+      description: Retrieve or update the authenticated user's permitted profile fields.
+      summary: Consulter son compte
+      tags:
+      - Domaine 1 - Authentification
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Me'
+          description: ''
+        '401':
+          description: Authentification JWT requise ou invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '429':
+          description: Limite de requêtes dépassée. Le délai est indiqué par DRF lorsque
+            disponible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+    patch:
+      operationId: auth_me_update
+      description: Modifie uniquement le prénom, le nom et le numéro de téléphone.
+      summary: Modifier son compte
+      tags:
+      - Domaine 1 - Authentification
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedMeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedMeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedMeRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Me'
+          description: ''
+        '400':
+          description: Requête invalide ou erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise ou invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '429':
+          description: Limite de requêtes dépassée. Le délai est indiqué par DRF lorsque
+            disponible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/auth/password-reset/:
+    post:
+      operationId: auth_password_reset
+      description: Envoie un lien de réinitialisation par e-mail si un compte actif
+        existe. La réponse reste identique quel que soit le compte demandé.
+      summary: Demander une réinitialisation du mot de passe
+      tags:
+      - Domaine 1 - Authentification
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordResetResponse'
+          description: ''
+        '400':
+          description: Requête invalide ou erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '429':
+          description: Limite de requêtes dépassée. Le délai est indiqué par DRF lorsque
+            disponible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/auth/password-reset-confirm/:
+    post:
+      operationId: auth_password_reset_confirm
+      description: Set a new password using valid Django reset credentials.
+      summary: Confirmer la réinitialisation du mot de passe
+      tags:
+      - Domaine 1 - Authentification
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirmRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirmRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirmRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+          description: ''
+        '400':
+          description: Requête invalide ou erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '429':
+          description: Limite de requêtes dépassée. Le délai est indiqué par DRF lorsque
+            disponible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/auth/refresh/:
+    post:
+      operationId: auth_token_refresh
+      description: Retourne un nouveau jeton d’accès à partir d’un jeton de rafraîchissement.
+      summary: Rafraîchir un jeton JWT
+      tags:
+      - Domaine 1 - Authentification
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VersionedTokenRefreshRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VersionedTokenRefreshRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VersionedTokenRefreshRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefreshResponse'
+          description: ''
+        '401':
+          description: Authentification JWT requise ou invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '429':
+          description: Limite de requêtes dépassée. Le délai est indiqué par DRF lorsque
+            disponible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/auth/register/:
+    post:
+      operationId: auth_register
+      description: Crée atomiquement un compte PATIENT actif et non vérifié ainsi
+        qu’un profil patient incomplet. Aucun jeton JWT n’est émis.
+      summary: Créer un compte patient et son profil
+      tags:
+      - Domaine 1 - Authentification
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterV1Response'
+          description: ''
+        '400':
+          description: Requête invalide ou erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '409':
+          description: Cette adresse e-mail est déjà utilisée.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '429':
+          description: Limite de requêtes dépassée. Le délai est indiqué par DRF lorsque
+            disponible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '500':
+          description: Le compte et le profil ont été annulés car le profil n’a pas
+            pu être créé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/health/:
+    get:
+      operationId: v1_health_retrieve
+      description: Ne vérifie ni ne révèle la base de données, les dépendances ou
+        l’environnement.
+      summary: Vérifier la disponibilité publique de l’API
+      tags:
+      - Technical
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+          description: ''
+  /api/v1/medical-records/allergies/:
+    get:
+      operationId: api_v1_medical_records_allergies_list
+      summary: Lister les une allergie accessibles
+      parameters:
+      - in: query
+        name: date_from
+        schema:
+          type: string
+        description: Borne ISO 8601 inclusive.
+      - in: query
+        name: date_to
+        schema:
+          type: string
+        description: Borne ISO 8601 inclusive.
+      - in: query
+        name: ordering
+        schema:
+          type: string
+        description: Champ de date, avec préfixe - pour un tri décroissant.
+      - in: query
+        name: page
+        schema:
+          type: integer
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: Maximum 100.
+      - in: query
+        name: patient_id
+        schema:
+          type: string
+          format: uuid
+        description: Médecin uniquement; limité aux affectations actives.
+      - in: query
+        name: status
+        schema:
+          type: string
+        description: Statut métier, si applicable.
+      tags:
+      - Medical records
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAllergyList'
+          description: ''
+        '400':
+          description: Données ou filtres invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Rôle, propriété ou affectation active insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Ressource inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+    post:
+      operationId: api_v1_medical_records_allergies_create
+      description: Médecin actuellement affecté uniquement.
+      summary: Créer une allergie
+      tags:
+      - Medical records
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AllergyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AllergyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AllergyRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Allergy'
+          description: ''
+        '400':
+          description: Données ou filtres invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Rôle, propriété ou affectation active insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Ressource inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/medical-records/allergies/{id}/:
+    get:
+      operationId: api_v1_medical_records_allergies_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this allergy.
+        required: true
+      tags:
+      - Medical records
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Allergy'
+          description: ''
+        '400':
+          description: Données ou filtres invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Rôle, propriété ou affectation active insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Ressource inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+    patch:
+      operationId: api_v1_medical_records_allergies_partial_update
+      description: Médecin actuellement affecté uniquement; propriétaire et auteur
+        immuables.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this allergy.
+        required: true
+      tags:
+      - Medical records
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAllergyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAllergyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAllergyRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Allergy'
+          description: ''
+        '400':
+          description: Données ou filtres invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Rôle, propriété ou affectation active insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Ressource inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/medical-records/chronic-diseases/:
+    get:
+      operationId: api_v1_medical_records_chronic_diseases_list
+      summary: Lister les une maladie chronique accessibles
+      parameters:
+      - in: query
+        name: date_from
+        schema:
+          type: string
+        description: Borne ISO 8601 inclusive.
+      - in: query
+        name: date_to
+        schema:
+          type: string
+        description: Borne ISO 8601 inclusive.
+      - in: query
+        name: ordering
+        schema:
+          type: string
+        description: Champ de date, avec préfixe - pour un tri décroissant.
+      - in: query
+        name: page
+        schema:
+          type: integer
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: Maximum 100.
+      - in: query
+        name: patient_id
+        schema:
+          type: string
+          format: uuid
+        description: Médecin uniquement; limité aux affectations actives.
+      - in: query
+        name: status
+        schema:
+          type: string
+        description: Statut métier, si applicable.
+      tags:
+      - Medical records
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedChronicDiseaseList'
+          description: ''
+        '400':
+          description: Données ou filtres invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Rôle, propriété ou affectation active insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Ressource inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+    post:
+      operationId: api_v1_medical_records_chronic_diseases_create
+      description: Médecin actuellement affecté uniquement.
+      summary: Créer une maladie chronique
+      tags:
+      - Medical records
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChronicDiseaseRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ChronicDiseaseRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ChronicDiseaseRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChronicDisease'
+          description: ''
+        '400':
+          description: Données ou filtres invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Rôle, propriété ou affectation active insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Ressource inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/medical-records/chronic-diseases/{id}/:
+    get:
+      operationId: api_v1_medical_records_chronic_diseases_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this chronic disease.
+        required: true
+      tags:
+      - Medical records
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChronicDisease'
+          description: ''
+        '400':
+          description: Données ou filtres invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Rôle, propriété ou affectation active insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Ressource inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+    patch:
+      operationId: api_v1_medical_records_chronic_diseases_partial_update
+      description: Médecin actuellement affecté uniquement; propriétaire et auteur
+        immuables.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this chronic disease.
+        required: true
+      tags:
+      - Medical records
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedChronicDiseaseRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedChronicDiseaseRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedChronicDiseaseRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChronicDisease'
+          description: ''
+        '400':
+          description: Données ou filtres invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Rôle, propriété ou affectation active insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Ressource inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/medical-records/consultations/:
+    get:
+      operationId: api_v1_medical_records_consultations_list
+      summary: Lister les une consultation accessibles
+      parameters:
+      - in: query
+        name: date_from
+        schema:
+          type: string
+        description: Borne ISO 8601 inclusive.
+      - in: query
+        name: date_to
+        schema:
+          type: string
+        description: Borne ISO 8601 inclusive.
+      - in: query
+        name: ordering
+        schema:
+          type: string
+        description: Champ de date, avec préfixe - pour un tri décroissant.
+      - in: query
+        name: page
+        schema:
+          type: integer
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: Maximum 100.
+      - in: query
+        name: patient_id
+        schema:
+          type: string
+          format: uuid
+        description: Médecin uniquement; limité aux affectations actives.
+      - in: query
+        name: status
+        schema:
+          type: string
+        description: Statut métier, si applicable.
+      tags:
+      - Medical records
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedConsultationList'
+          description: ''
+        '400':
+          description: Données ou filtres invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Rôle, propriété ou affectation active insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Ressource inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+    post:
+      operationId: api_v1_medical_records_consultations_create
+      description: Médecin actuellement affecté uniquement.
+      summary: Créer une consultation
+      tags:
+      - Medical records
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConsultationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ConsultationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ConsultationRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Consultation'
+          description: ''
+        '400':
+          description: Données ou filtres invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Rôle, propriété ou affectation active insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Ressource inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/medical-records/consultations/{id}/:
+    get:
+      operationId: api_v1_medical_records_consultations_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this consultation.
+        required: true
+      tags:
+      - Medical records
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Consultation'
+          description: ''
+        '400':
+          description: Données ou filtres invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Rôle, propriété ou affectation active insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Ressource inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+    patch:
+      operationId: api_v1_medical_records_consultations_partial_update
+      description: Médecin actuellement affecté uniquement; propriétaire et auteur
+        immuables.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this consultation.
+        required: true
+      tags:
+      - Medical records
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedConsultationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedConsultationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedConsultationRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Consultation'
+          description: ''
+        '400':
+          description: Données ou filtres invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Rôle, propriété ou affectation active insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Ressource inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/medical-records/documents/:
+    get:
+      operationId: api_v1_medical_records_documents_list
+      parameters:
+      - in: query
+        name: date_from
+        schema:
+          type: string
+        description: Borne ISO 8601 inclusive.
+      - in: query
+        name: date_to
+        schema:
+          type: string
+        description: Borne ISO 8601 inclusive.
+      - in: query
+        name: ordering
+        schema:
+          type: string
+        description: Champ de date, avec préfixe - pour un tri décroissant.
+      - in: query
+        name: page
+        schema:
+          type: integer
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: Maximum 100.
+      - in: query
+        name: patient_id
+        schema:
+          type: string
+          format: uuid
+        description: Médecin uniquement; limité aux affectations actives.
+      - in: query
+        name: status
+        schema:
+          type: string
+        description: Statut métier, si applicable.
+      tags:
+      - Medical records
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMedicalDocumentList'
+          description: ''
+        '400':
+          description: Données ou filtres invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Rôle, propriété ou affectation active insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Ressource inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+    post:
+      operationId: api_v1_medical_records_documents_create
+      summary: Téléverser un document médical
+      tags:
+      - Medical records
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MedicalDocumentRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MedicalDocument'
+          description: ''
+        '400':
+          description: Données ou filtres invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Rôle, propriété ou affectation active insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Ressource inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/medical-records/documents/{id}/:
+    get:
+      operationId: api_v1_medical_records_documents_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this medical document.
+        required: true
+      tags:
+      - Medical records
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MedicalDocument'
+          description: ''
+        '400':
+          description: Données ou filtres invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Rôle, propriété ou affectation active insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Ressource inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/medical-records/documents/{id}/download/:
+    get:
+      operationId: api_v1_medical_records_documents_download_retrieve
+      summary: Télécharger une pièce jointe protégée
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this medical document.
+        required: true
+      tags:
+      - Medical records
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+          description: ''
+        '400':
+          description: Données ou filtres invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Rôle, propriété ou affectation active insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Ressource inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/medical-records/notes/:
+    get:
+      operationId: api_v1_medical_records_notes_list
+      summary: Lister les une note médicale accessibles
+      parameters:
+      - in: query
+        name: date_from
+        schema:
+          type: string
+        description: Borne ISO 8601 inclusive.
+      - in: query
+        name: date_to
+        schema:
+          type: string
+        description: Borne ISO 8601 inclusive.
+      - in: query
+        name: ordering
+        schema:
+          type: string
+        description: Champ de date, avec préfixe - pour un tri décroissant.
+      - in: query
+        name: page
+        schema:
+          type: integer
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: Maximum 100.
+      - in: query
+        name: patient_id
+        schema:
+          type: string
+          format: uuid
+        description: Médecin uniquement; limité aux affectations actives.
+      - in: query
+        name: status
+        schema:
+          type: string
+        description: Statut métier, si applicable.
+      tags:
+      - Medical records
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMedicalNoteList'
+          description: ''
+        '400':
+          description: Données ou filtres invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Rôle, propriété ou affectation active insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Ressource inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+    post:
+      operationId: api_v1_medical_records_notes_create
+      description: Médecin actuellement affecté uniquement.
+      summary: Créer une note médicale
+      tags:
+      - Medical records
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MedicalNoteRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MedicalNoteRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MedicalNoteRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MedicalNote'
+          description: ''
+        '400':
+          description: Données ou filtres invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Rôle, propriété ou affectation active insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Ressource inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/medical-records/notes/{id}/:
+    get:
+      operationId: api_v1_medical_records_notes_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this medical note.
+        required: true
+      tags:
+      - Medical records
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MedicalNote'
+          description: ''
+        '400':
+          description: Données ou filtres invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Rôle, propriété ou affectation active insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Ressource inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+    patch:
+      operationId: api_v1_medical_records_notes_partial_update
+      description: Médecin actuellement affecté uniquement; propriétaire et auteur
+        immuables.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this medical note.
+        required: true
+      tags:
+      - Medical records
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedMedicalNoteRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedMedicalNoteRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedMedicalNoteRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MedicalNote'
+          description: ''
+        '400':
+          description: Données ou filtres invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Rôle, propriété ou affectation active insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Ressource inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/medical-records/record/:
+    get:
+      operationId: api_v1_medical_records_record_retrieve
+      summary: Consulter le dossier médical accessible
+      parameters:
+      - in: query
+        name: patient_id
+        schema:
+          type: string
+          format: uuid
+        description: Obligatoire pour un médecin.
+      tags:
+      - Medical records
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MedicalRecord'
+          description: ''
+        '400':
+          description: Données ou filtres invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Rôle, propriété ou affectation active insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Ressource inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/medical-records/treatments/:
+    get:
+      operationId: api_v1_medical_records_treatments_list
+      summary: Lister les un traitement accessibles
+      parameters:
+      - in: query
+        name: date_from
+        schema:
+          type: string
+        description: Borne ISO 8601 inclusive.
+      - in: query
+        name: date_to
+        schema:
+          type: string
+        description: Borne ISO 8601 inclusive.
+      - in: query
+        name: ordering
+        schema:
+          type: string
+        description: Champ de date, avec préfixe - pour un tri décroissant.
+      - in: query
+        name: page
+        schema:
+          type: integer
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: Maximum 100.
+      - in: query
+        name: patient_id
+        schema:
+          type: string
+          format: uuid
+        description: Médecin uniquement; limité aux affectations actives.
+      - in: query
+        name: status
+        schema:
+          type: string
+        description: Statut métier, si applicable.
+      tags:
+      - Medical records
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTreatmentList'
+          description: ''
+        '400':
+          description: Données ou filtres invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Rôle, propriété ou affectation active insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Ressource inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+    post:
+      operationId: api_v1_medical_records_treatments_create
+      description: Médecin actuellement affecté uniquement.
+      summary: Créer un traitement
+      tags:
+      - Medical records
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TreatmentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TreatmentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TreatmentRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Treatment'
+          description: ''
+        '400':
+          description: Données ou filtres invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Rôle, propriété ou affectation active insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Ressource inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/medical-records/treatments/{id}/:
+    get:
+      operationId: api_v1_medical_records_treatments_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this treatment.
+        required: true
+      tags:
+      - Medical records
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Treatment'
+          description: ''
+        '400':
+          description: Données ou filtres invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Rôle, propriété ou affectation active insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Ressource inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+    patch:
+      operationId: api_v1_medical_records_treatments_partial_update
+      description: Médecin actuellement affecté uniquement; propriétaire et auteur
+        immuables.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this treatment.
+        required: true
+      tags:
+      - Medical records
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTreatmentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTreatmentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTreatmentRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Treatment'
+          description: ''
+        '400':
+          description: Données ou filtres invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Rôle, propriété ou affectation active insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Ressource inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/monitoring/blood-glucose/:
+    get:
+      operationId: api_v1_monitoring_blood_glucose_list
+      summary: Lister les mesures de glycémie accessibles
+      parameters:
+      - in: query
+        name: date_from
+        schema:
+          type: string
+        description: Date ou date-heure minimale de mesure (ISO 8601).
+      - in: query
+        name: date_to
+        schema:
+          type: string
+        description: Date ou date-heure maximale de mesure (ISO 8601).
+      - in: query
+        name: ordering
+        schema:
+          type: string
+          enum:
+          - -date_mesure
+          - date_mesure
+        description: 'Tri chronologique. Par défaut : mesures les plus récentes.'
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Numéro de page.
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: Nombre de résultats par page (maximum 100).
+      - in: query
+        name: patient_id
+        schema:
+          type: string
+          format: uuid
+        description: Filtre réservé aux médecins et limité à leurs patients actifs.
+      tags:
+      - Monitoring
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBloodGlucoseList'
+          description: ''
+        '400':
+          description: Filtres ou données de mesure invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise ou invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Rôle, propriété ou affectation insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Mesure inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+    post:
+      operationId: api_v1_monitoring_blood_glucose_create
+      description: Réservé au patient propriétaire. Unité obligatoire, sans conversion
+        silencieuse. La source est forcée à MANUAL.
+      summary: Enregistrer sa propre glycémie
+      tags:
+      - Monitoring
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BloodGlucoseRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BloodGlucoseRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BloodGlucoseRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BloodGlucose'
+          description: ''
+        '400':
+          description: Filtres ou données de mesure invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise ou invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Rôle, propriété ou affectation insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Mesure inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/monitoring/blood-glucose/{id}/:
+    get:
+      operationId: api_v1_monitoring_blood_glucose_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this blood glucose.
+        required: true
+      tags:
+      - Monitoring
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BloodGlucose'
+          description: ''
+        '400':
+          description: Filtres ou données de mesure invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise ou invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Rôle, propriété ou affectation insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Mesure inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+    patch:
+      operationId: api_v1_monitoring_blood_glucose_partial_update
+      description: Médecins en lecture seule. Le propriétaire et la source sont immuables.
+      summary: Corriger sa propre mesure de glycémie
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this blood glucose.
+        required: true
+      tags:
+      - Monitoring
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBloodGlucoseRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBloodGlucoseRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBloodGlucoseRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BloodGlucose'
+          description: ''
+        '400':
+          description: Filtres ou données de mesure invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise ou invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Rôle, propriété ou affectation insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Mesure inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/monitoring/blood-pressure/:
+    get:
+      operationId: api_v1_monitoring_blood_pressure_list
+      summary: Lister les mesures de tension accessibles
+      parameters:
+      - in: query
+        name: date_from
+        schema:
+          type: string
+        description: Date ou date-heure minimale de mesure (ISO 8601).
+      - in: query
+        name: date_to
+        schema:
+          type: string
+        description: Date ou date-heure maximale de mesure (ISO 8601).
+      - in: query
+        name: ordering
+        schema:
+          type: string
+          enum:
+          - -date_mesure
+          - date_mesure
+        description: 'Tri chronologique. Par défaut : mesures les plus récentes.'
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Numéro de page.
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: Nombre de résultats par page (maximum 100).
+      - in: query
+        name: patient_id
+        schema:
+          type: string
+          format: uuid
+        description: Filtre réservé aux médecins et limité à leurs patients actifs.
+      tags:
+      - Monitoring
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBloodPressureList'
+          description: ''
+        '400':
+          description: Filtres ou données de mesure invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise ou invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Rôle, propriété ou affectation insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Mesure inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+    post:
+      operationId: api_v1_monitoring_blood_pressure_create
+      description: Réservé au patient propriétaire. La source est forcée à MANUAL.
+      summary: Enregistrer sa propre tension
+      tags:
+      - Monitoring
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BloodPressureRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BloodPressureRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BloodPressureRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BloodPressure'
+          description: ''
+        '400':
+          description: Filtres ou données de mesure invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise ou invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Rôle, propriété ou affectation insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Mesure inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/monitoring/blood-pressure/{id}/:
+    get:
+      operationId: api_v1_monitoring_blood_pressure_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this blood pressure.
+        required: true
+      tags:
+      - Monitoring
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BloodPressure'
+          description: ''
+        '400':
+          description: Filtres ou données de mesure invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise ou invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Rôle, propriété ou affectation insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Mesure inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+    patch:
+      operationId: api_v1_monitoring_blood_pressure_partial_update
+      description: Médecins en lecture seule. Le propriétaire et la source sont immuables.
+      summary: Corriger sa propre mesure de tension
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this blood pressure.
+        required: true
+      tags:
+      - Monitoring
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBloodPressureRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBloodPressureRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBloodPressureRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BloodPressure'
+          description: ''
+        '400':
+          description: Filtres ou données de mesure invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise ou invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Rôle, propriété ou affectation insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Mesure inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/notifications/:
+    get:
+      operationId: api_v1_notifications_list
+      parameters:
+      - in: query
+        name: date_from
+        schema:
+          type: string
+      - in: query
+        name: date_to
+        schema:
+          type: string
+      - in: query
+        name: is_read
+        schema:
+          type: boolean
+      - in: query
+        name: ordering
+        schema:
+          type: string
+          enum:
+          - -created_at
+          - created_at
+      - in: query
+        name: page
+        schema:
+          type: integer
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: Maximum 100.
+      - in: query
+        name: priority
+        schema:
+          type: string
+          enum:
+          - CRITICAL
+          - HIGH
+          - LOW
+          - NORMAL
+      - in: query
+        name: type
+        schema:
+          type: string
+          enum:
+          - ALERT_ACKNOWLEDGED
+          - ALERT_DISMISSED
+          - ALERT_RESOLVED
+          - MEDICAL_ALERT_CREATED
+          - SYSTEM
+      tags:
+      - Notifications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedNotificationList'
+          description: ''
+        '400':
+          description: Filtre invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Compte ou propriété insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Notification inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '405':
+          description: Méthode désactivée.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/notifications/{id}/:
+    get:
+      operationId: api_v1_notifications_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this notification.
+        required: true
+      tags:
+      - Notifications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+        '400':
+          description: Filtre invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Compte ou propriété insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Notification inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '405':
+          description: Méthode désactivée.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/notifications/{id}/read/:
+    patch:
+      operationId: api_v1_notifications_read_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this notification.
+        required: true
+      tags:
+      - Notifications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+        '400':
+          description: Filtre invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Compte ou propriété insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Notification inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '405':
+          description: Méthode désactivée.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/notifications/read-all/:
+    patch:
+      operationId: api_v1_notifications_read_all_partial_update
+      tags:
+      - Notifications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadAllResult'
+          description: ''
+        '400':
+          description: Filtre invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Compte ou propriété insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Notification inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '405':
+          description: Méthode désactivée.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/notifications/unread-count/:
+    get:
+      operationId: api_v1_notifications_unread_count_retrieve
+      tags:
+      - Notifications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnreadCount'
+          description: ''
+        '400':
+          description: Filtre invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Compte ou propriété insuffisante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Notification inexistante ou inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '405':
+          description: Méthode désactivée.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/profiles/assignments/:
+    get:
+      operationId: api_v1_profiles_assignments_retrieve
+      description: Une affectation terminée reste visible mais ne donne aucun accès
+        médical.
+      summary: Consulter mon historique d’affectations
+      parameters:
+      - in: query
+        name: date_from
+        schema:
+          type: string
+          format: date-time
+        description: Début d’affectation minimal, ISO 8601.
+      - in: query
+        name: date_to
+        schema:
+          type: string
+          format: date-time
+        description: Début d’affectation maximal, ISO 8601.
+      - in: query
+        name: ordering
+        schema:
+          type: string
+          enum:
+          - -assigned_at
+          - assigned_at
+      - in: query
+        name: page
+        schema:
+          type: integer
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: Maximum 100.
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - ACTIVE
+          - ENDED
+      tags:
+      - Profiles
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAssignments'
+          description: ''
+        '400':
+          description: Paramètres ou champs invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Compte inactif ou rôle incorrect.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Profil métier manquant.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '405':
+          description: Méthode non autorisée.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/profiles/me/:
+    get:
+      operationId: api_v1_profiles_me_retrieve
+      description: Réponse patient ou médecin déterminée exclusivement depuis le JWT.
+      summary: Consulter son profil métier
+      tags:
+      - Profiles
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentProfileResponse'
+          description: ''
+        '400':
+          description: Paramètres ou champs invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Compte inactif ou rôle incorrect.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Profil métier manquant.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '405':
+          description: Méthode non autorisée.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+    patch:
+      operationId: api_v1_profiles_me_partial_update
+      description: 'Patient : date_naissance, sexe, poids, taille. Médecin : specialite,
+        hopital, annees_experience. Propriétaire, rôle, numéro d’ordre et dates sont
+        immuables.'
+      summary: Modifier son profil métier
+      tags:
+      - Profiles
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCurrentProfileUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCurrentProfileUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCurrentProfileUpdateRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdatedCurrentProfileResponse'
+          description: ''
+        '400':
+          description: Paramètres ou champs invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Compte inactif ou rôle incorrect.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Profil métier manquant.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '405':
+          description: Méthode non autorisée.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/profiles/my-doctors/:
+    get:
+      operationId: api_v1_profiles_my_doctors_retrieve
+      summary: Lister mes médecins actuellement affectés
+      parameters:
+      - in: query
+        name: date_from
+        schema:
+          type: string
+          format: date-time
+        description: Début d’affectation minimal, ISO 8601.
+      - in: query
+        name: date_to
+        schema:
+          type: string
+          format: date-time
+        description: Début d’affectation maximal, ISO 8601.
+      - in: query
+        name: ordering
+        schema:
+          type: string
+          enum:
+          - -assigned_at
+          - assigned_at
+      - in: query
+        name: page
+        schema:
+          type: integer
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: Maximum 100.
+      tags:
+      - Profiles
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDoctors'
+          description: ''
+        '400':
+          description: Paramètres ou champs invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Compte inactif ou rôle incorrect.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Profil métier manquant.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '405':
+          description: Méthode non autorisée.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+  /api/v1/profiles/my-patients/:
+    get:
+      operationId: api_v1_profiles_my_patients_retrieve
+      summary: Lister mes patients actuellement affectés
+      parameters:
+      - in: query
+        name: date_from
+        schema:
+          type: string
+          format: date-time
+        description: Début d’affectation minimal, ISO 8601.
+      - in: query
+        name: date_to
+        schema:
+          type: string
+          format: date-time
+        description: Début d’affectation maximal, ISO 8601.
+      - in: query
+        name: ordering
+        schema:
+          type: string
+          enum:
+          - -assigned_at
+          - assigned_at
+      - in: query
+        name: page
+        schema:
+          type: integer
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: Maximum 100.
+      tags:
+      - Profiles
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPatients'
+          description: ''
+        '400':
+          description: Paramètres ou champs invalides.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '401':
+          description: Authentification JWT requise.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '403':
+          description: Compte inactif ou rôle incorrect.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '404':
+          description: Profil métier manquant.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+        '405':
+          description: Méthode non autorisée.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1Error'
+components:
+  schemas:
+    AggregateBloodPressureSeries:
+      type: object
+      properties:
+        unit:
+          type: string
+        granularity:
+          type: string
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BloodPressureAggregate'
+      required:
+      - granularity
+      - results
+      - unit
+    AggregateGlucoseSeries:
+      type: object
+      properties:
+        unit:
+          type: string
+        granularity:
+          type: string
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/GlucoseAggregate'
+      required:
+      - granularity
+      - results
+      - unit
+    AlertsAnalytics:
+      type: object
+      properties:
+        period:
+          type: object
+          additionalProperties: {}
+        total:
+          type: integer
+        by_status:
+          type: object
+          additionalProperties: {}
+        by_severity:
+          type: object
+          additionalProperties: {}
+        by_rule_code:
+          type: object
+          additionalProperties: {}
+        evolution:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+      required:
+      - by_rule_code
+      - by_severity
+      - by_status
+      - evolution
+      - period
+      - total
+    Allergy:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        patient_id:
+          type: string
+          format: uuid
+        nom:
+          type: string
+          title: Name
+          maxLength: 255
+        gravite:
+          allOf:
+          - $ref: '#/components/schemas/AllergyGraviteEnum'
+          title: Severity
+        reaction:
+          type: string
+        is_active:
+          type: boolean
+          title: Active
+        notes:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - nom
+      - updated_at
+    AllergyGraviteEnum:
+      enum:
+      - LOW
+      - MEDIUM
+      - HIGH
+      type: string
+      description: |-
+        * `LOW` - Low
+        * `MEDIUM` - Medium
+        * `HIGH` - High
+    AllergyRequest:
+      type: object
+      properties:
+        patient_id:
+          type: string
+          format: uuid
+        nom:
+          type: string
+          minLength: 1
+          title: Name
+          maxLength: 255
+        gravite:
+          allOf:
+          - $ref: '#/components/schemas/AllergyGraviteEnum'
+          title: Severity
+        reaction:
+          type: string
+        is_active:
+          type: boolean
+          title: Active
+        notes:
+          type: string
+      required:
+      - nom
+    AssignmentHistory:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/AssignmentStatusEnum'
+          readOnly: true
+        assigned_at:
+          type: string
+          format: date-time
+          readOnly: true
+        ended_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        counterpart:
+          type: object
+          additionalProperties: {}
+          readOnly: true
+      required:
+      - assigned_at
+      - counterpart
+      - ended_at
+      - id
+      - status
+    AssignmentStatusEnum:
+      enum:
+      - ACTIVE
+      - ENDED
+      type: string
+      description: |-
+        * `ACTIVE` - Active
+        * `ENDED` - Ended
+    BloodGlucose:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        patient_id:
+          type: string
+          format: uuid
+          readOnly: true
+        valeur:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          title: Value
+        unite:
+          allOf:
+          - $ref: '#/components/schemas/UniteEnum'
+          title: Unit
+        type_mesure:
+          allOf:
+          - $ref: '#/components/schemas/TypeMesureEnum'
+          title: Measurement type
+        source_mesure:
+          allOf:
+          - $ref: '#/components/schemas/SourceMesureEnum'
+          readOnly: true
+          title: Measurement source
+        hba1c:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
+          nullable: true
+        contexte_repas:
+          allOf:
+          - $ref: '#/components/schemas/ContexteRepasEnum'
+          title: Meal context
+        heure_mesure:
+          type: string
+          format: time
+          nullable: true
+          title: Measurement time
+        type_prelevement:
+          allOf:
+          - $ref: '#/components/schemas/TypePrelevementEnum'
+          title: Sample type
+        notes:
+          type: string
+        date_mesure:
+          type: string
+          format: date-time
+          title: Measurement date
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - date_mesure
+      - id
+      - patient_id
+      - source_mesure
+      - unite
+      - updated_at
+      - valeur
+    BloodGlucoseRequest:
+      type: object
+      properties:
+        valeur:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          title: Value
+        unite:
+          allOf:
+          - $ref: '#/components/schemas/UniteEnum'
+          title: Unit
+        type_mesure:
+          allOf:
+          - $ref: '#/components/schemas/TypeMesureEnum'
+          title: Measurement type
+        hba1c:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
+          nullable: true
+        contexte_repas:
+          allOf:
+          - $ref: '#/components/schemas/ContexteRepasEnum'
+          title: Meal context
+        heure_mesure:
+          type: string
+          format: time
+          nullable: true
+          title: Measurement time
+        type_prelevement:
+          allOf:
+          - $ref: '#/components/schemas/TypePrelevementEnum'
+          title: Sample type
+        notes:
+          type: string
+        date_mesure:
+          type: string
+          format: date-time
+          title: Measurement date
+      required:
+      - date_mesure
+      - unite
+      - valeur
+    BloodGlucoseSeriesResponse:
+      oneOf:
+      - $ref: '#/components/schemas/RawGlucoseSeries'
+      - $ref: '#/components/schemas/AggregateGlucoseSeries'
+    BloodPressure:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        patient_id:
+          type: string
+          format: uuid
+          readOnly: true
+        systolique:
+          type: integer
+          maximum: 300
+          minimum: 40
+          title: Systolic
+        diastolique:
+          type: integer
+          maximum: 200
+          minimum: 20
+          title: Diastolic
+        frequence_cardiaque:
+          type: integer
+          maximum: 250
+          minimum: 20
+          nullable: true
+          title: Heart rate
+        source_mesure:
+          allOf:
+          - $ref: '#/components/schemas/SourceMesureEnum'
+          readOnly: true
+          title: Measurement source
+        measurement_context:
+          $ref: '#/components/schemas/MeasurementContextEnum'
+        position:
+          $ref: '#/components/schemas/PositionEnum'
+        bras_utilise:
+          allOf:
+          - $ref: '#/components/schemas/BrasUtiliseEnum'
+          title: Arm used
+        numero_mesure:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+          title: Measurement number
+        notes:
+          type: string
+        date_mesure:
+          type: string
+          format: date-time
+          title: Measurement date
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - date_mesure
+      - diastolique
+      - id
+      - patient_id
+      - source_mesure
+      - systolique
+      - updated_at
+    BloodPressureAggregate:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date-time
+        count:
+          type: integer
+        systolic_avg:
+          type: number
+          format: double
+        systolic_min:
+          type: number
+          format: double
+        systolic_max:
+          type: number
+          format: double
+        diastolic_avg:
+          type: number
+          format: double
+        diastolic_min:
+          type: number
+          format: double
+        diastolic_max:
+          type: number
+          format: double
+        heart_rate_avg:
+          type: number
+          format: double
+          nullable: true
+        heart_rate_min:
+          type: number
+          format: double
+          nullable: true
+        heart_rate_max:
+          type: number
+          format: double
+          nullable: true
+      required:
+      - count
+      - date
+      - diastolic_avg
+      - diastolic_max
+      - diastolic_min
+      - heart_rate_avg
+      - heart_rate_max
+      - heart_rate_min
+      - systolic_avg
+      - systolic_max
+      - systolic_min
+    BloodPressurePoint:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date-time
+        systolic:
+          type: number
+          format: double
+        diastolic:
+          type: number
+          format: double
+        heart_rate:
+          type: number
+          format: double
+          nullable: true
+      required:
+      - date
+      - diastolic
+      - heart_rate
+      - systolic
+    BloodPressureRequest:
+      type: object
+      properties:
+        systolique:
+          type: integer
+          maximum: 300
+          minimum: 40
+          title: Systolic
+        diastolique:
+          type: integer
+          maximum: 200
+          minimum: 20
+          title: Diastolic
+        frequence_cardiaque:
+          type: integer
+          maximum: 250
+          minimum: 20
+          nullable: true
+          title: Heart rate
+        measurement_context:
+          $ref: '#/components/schemas/MeasurementContextEnum'
+        position:
+          $ref: '#/components/schemas/PositionEnum'
+        bras_utilise:
+          allOf:
+          - $ref: '#/components/schemas/BrasUtiliseEnum'
+          title: Arm used
+        numero_mesure:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+          title: Measurement number
+        notes:
+          type: string
+        date_mesure:
+          type: string
+          format: date-time
+          title: Measurement date
+      required:
+      - date_mesure
+      - diastolique
+      - systolique
+    BloodPressureSeriesResponse:
+      oneOf:
+      - $ref: '#/components/schemas/RawBloodPressureSeries'
+      - $ref: '#/components/schemas/AggregateBloodPressureSeries'
+    BrasUtiliseEnum:
+      enum:
+      - LEFT
+      - RIGHT
+      - BOTH
+      type: string
+      description: |-
+        * `LEFT` - Left
+        * `RIGHT` - Right
+        * `BOTH` - Both
+    ChangePasswordRequest:
+      type: object
+      description: Validate and change the authenticated user's password.
+      properties:
+        old_password:
+          type: string
+          writeOnly: true
+          minLength: 1
+        new_password:
+          type: string
+          writeOnly: true
+          minLength: 1
+        new_password_confirm:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - new_password
+      - new_password_confirm
+      - old_password
+    ChronicDisease:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        patient_id:
+          type: string
+          format: uuid
+        nom_maladie:
+          type: string
+          title: Disease name
+          maxLength: 255
+        date_diagnostic:
+          type: string
+          format: date
+          nullable: true
+          title: Diagnosis date
+        date_resolution:
+          type: string
+          format: date
+          nullable: true
+          title: Resolution date
+        gravite:
+          allOf:
+          - $ref: '#/components/schemas/ChronicDiseaseGraviteEnum'
+          title: Severity
+        statut:
+          allOf:
+          - $ref: '#/components/schemas/ChronicDiseaseStatutEnum'
+          title: Status
+        notes:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - nom_maladie
+      - updated_at
+    ChronicDiseaseGraviteEnum:
+      enum:
+      - LOW
+      - MEDIUM
+      - HIGH
+      - CRITICAL
+      type: string
+      description: |-
+        * `LOW` - Low
+        * `MEDIUM` - Medium
+        * `HIGH` - High
+        * `CRITICAL` - Critical
+    ChronicDiseaseRequest:
+      type: object
+      properties:
+        patient_id:
+          type: string
+          format: uuid
+        nom_maladie:
+          type: string
+          minLength: 1
+          title: Disease name
+          maxLength: 255
+        date_diagnostic:
+          type: string
+          format: date
+          nullable: true
+          title: Diagnosis date
+        date_resolution:
+          type: string
+          format: date
+          nullable: true
+          title: Resolution date
+        gravite:
+          allOf:
+          - $ref: '#/components/schemas/ChronicDiseaseGraviteEnum'
+          title: Severity
+        statut:
+          allOf:
+          - $ref: '#/components/schemas/ChronicDiseaseStatutEnum'
+          title: Status
+        notes:
+          type: string
+      required:
+      - nom_maladie
+    ChronicDiseaseStatutEnum:
+      enum:
+      - ACTIVE
+      - INACTIVE
+      - CONTROLLED
+      type: string
+      description: |-
+        * `ACTIVE` - Active
+        * `INACTIVE` - Inactive
+        * `CONTROLLED` - Controlled
+    Consultation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        patient_id:
+          type: string
+          format: uuid
+        doctor_id:
+          type: string
+          format: uuid
+          readOnly: true
+        date_consultation:
+          type: string
+          format: date-time
+          title: Consultation date
+        motif:
+          type: string
+          title: Reason
+        diagnostic:
+          type: string
+          title: Diagnosis
+        symptomes:
+          type: string
+          title: Symptoms
+        observations:
+          type: string
+        notes:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - date_consultation
+      - doctor_id
+      - id
+      - motif
+      - updated_at
+    ConsultationRequest:
+      type: object
+      properties:
+        patient_id:
+          type: string
+          format: uuid
+        date_consultation:
+          type: string
+          format: date-time
+          title: Consultation date
+        motif:
+          type: string
+          minLength: 1
+          title: Reason
+        diagnostic:
+          type: string
+          title: Diagnosis
+        symptomes:
+          type: string
+          title: Symptoms
+        observations:
+          type: string
+        notes:
+          type: string
+      required:
+      - date_consultation
+      - motif
+    ContexteRepasEnum:
+      enum:
+      - BEFORE_MEAL
+      - AFTER_MEAL
+      - NO_MEAL
+      type: string
+      description: |-
+        * `BEFORE_MEAL` - Before meal
+        * `AFTER_MEAL` - After meal
+        * `NO_MEAL` - No meal
+    CurrentProfileResponse:
+      oneOf:
+      - $ref: '#/components/schemas/PatientMeResponse'
+      - $ref: '#/components/schemas/DoctorMeResponse'
+      discriminator:
+        propertyName: profile_type
+        mapping:
+          PATIENT: '#/components/schemas/PatientMeResponse'
+          DOCTOR: '#/components/schemas/DoctorMeResponse'
+    DoctorMeResponse:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/ProfileUser'
+        profile_type:
+          type: string
+        profile:
+          $ref: '#/components/schemas/DoctorProfileRead'
+        onboarding:
+          $ref: '#/components/schemas/Onboarding'
+      required:
+      - onboarding
+      - profile
+      - profile_type
+      - user
+    DoctorProfileRead:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        specialite:
+          type: string
+          readOnly: true
+          title: Specialty
+        numero_ordre:
+          type: string
+          readOnly: true
+          title: Registration number
+        hopital:
+          type: string
+          readOnly: true
+          title: Hospital
+        annees_experience:
+          type: integer
+          readOnly: true
+          title: Years of experience
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - annees_experience
+      - created_at
+      - hopital
+      - id
+      - numero_ordre
+      - specialite
+      - updated_at
+    GlucoseAggregate:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date-time
+        count:
+          type: integer
+        average:
+          type: number
+          format: double
+        minimum:
+          type: number
+          format: double
+        maximum:
+          type: number
+          format: double
+      required:
+      - average
+      - count
+      - date
+      - maximum
+      - minimum
+    GlucosePoint:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date-time
+        value:
+          type: number
+          format: double
+        unit:
+          type: string
+        original_value:
+          type: number
+          format: double
+        original_unit:
+          type: string
+        context:
+          type: string
+      required:
+      - context
+      - date
+      - original_unit
+      - original_value
+      - unit
+      - value
+    GroupeSanguinEnum:
+      enum:
+      - A_POSITIVE
+      - A_NEGATIVE
+      - B_POSITIVE
+      - B_NEGATIVE
+      - AB_POSITIVE
+      - AB_NEGATIVE
+      - O_POSITIVE
+      - O_NEGATIVE
+      - UNKNOWN
+      type: string
+      description: |-
+        * `A_POSITIVE` - A+
+        * `A_NEGATIVE` - A-
+        * `B_POSITIVE` - B+
+        * `B_NEGATIVE` - B-
+        * `AB_POSITIVE` - AB+
+        * `AB_NEGATIVE` - AB-
+        * `O_POSITIVE` - O+
+        * `O_NEGATIVE` - O-
+        * `UNKNOWN` - Unknown
+    Hba1cPoint:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date-time
+        value:
+          type: number
+          format: double
+        trend:
+          $ref: '#/components/schemas/TrendEnum'
+      required:
+      - date
+      - trend
+      - value
+    Hba1cSeries:
+      type: object
+      properties:
+        count:
+          type: integer
+        next:
+          type: string
+          format: uri
+          nullable: true
+        previous:
+          type: string
+          format: uri
+          nullable: true
+        unit:
+          type: string
+        granularity:
+          type: string
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Hba1cPoint'
+      required:
+      - count
+      - granularity
+      - next
+      - previous
+      - results
+      - unit
+    Health:
+      type: object
+      properties:
+        status:
+          type: string
+        version:
+          type: string
+      required:
+      - status
+      - version
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - email
+      - password
+    LoginResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          readOnly: true
+        access:
+          type: string
+          readOnly: true
+        user:
+          allOf:
+          - $ref: '#/components/schemas/LoginUser'
+          readOnly: true
+      required:
+      - access
+      - message
+      - refresh
+      - user
+    LoginUser:
+      type: object
+      description: Expose the public user fields returned after a successful login.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        first_name:
+          type: string
+          readOnly: true
+        last_name:
+          type: string
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+          title: Email address
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          readOnly: true
+      required:
+      - email
+      - first_name
+      - id
+      - last_name
+      - role
+    LogoutRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - refresh
+    Me:
+      type: object
+      description: Serialize the authenticated user and limit editable profile fields.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          readOnly: true
+          title: Email address
+        phone:
+          type: string
+          title: Phone number
+          maxLength: 30
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          readOnly: true
+        is_verified:
+          type: boolean
+          readOnly: true
+          title: Verified
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - email
+      - id
+      - is_verified
+      - role
+    MeasurementContextEnum:
+      enum:
+      - REST
+      - EXERCISE
+      - STRESS
+      - ILLNESS
+      type: string
+      description: |-
+        * `REST` - Rest
+        * `EXERCISE` - Exercise
+        * `STRESS` - Stress
+        * `ILLNESS` - Illness
+    MedicalAlert:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        patient_id:
+          type: string
+          format: uuid
+          readOnly: true
+        type:
+          allOf:
+          - $ref: '#/components/schemas/MedicalAlertTypeEnum'
+          readOnly: true
+        niveau:
+          allOf:
+          - $ref: '#/components/schemas/NiveauEnum'
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/MedicalAlertStatusEnum'
+          readOnly: true
+        source:
+          allOf:
+          - $ref: '#/components/schemas/SourceEnum'
+          readOnly: true
+        rule_code:
+          type: string
+          readOnly: true
+        rule_name:
+          type: string
+          readOnly: true
+        message:
+          type: string
+          readOnly: true
+        source_type:
+          type: string
+          readOnly: true
+        source_id:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        observed_value:
+          type: string
+          readOnly: true
+        unit:
+          type: string
+          readOnly: true
+        detected_at:
+          type: string
+          format: date-time
+          readOnly: true
+        acknowledged_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        resolved_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        dismissed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        handled_by_id:
+          type: string
+          format: uuid
+          readOnly: true
+        status_reason:
+          type: string
+          readOnly: true
+        metadata:
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - acknowledged_at
+      - created_at
+      - detected_at
+      - dismissed_at
+      - handled_by_id
+      - id
+      - message
+      - metadata
+      - niveau
+      - observed_value
+      - patient_id
+      - resolved_at
+      - rule_code
+      - rule_name
+      - source
+      - source_id
+      - source_type
+      - status
+      - status_reason
+      - type
+      - unit
+      - updated_at
+    MedicalAlertStatusEnum:
+      enum:
+      - OPEN
+      - ACKNOWLEDGED
+      - RESOLVED
+      - DISMISSED
+      type: string
+      description: |-
+        * `OPEN` - Open
+        * `ACKNOWLEDGED` - Acknowledged
+        * `RESOLVED` - Resolved
+        * `DISMISSED` - Dismissed
+    MedicalAlertTypeEnum:
+      enum:
+      - HYPERTENSION
+      - DIABETES
+      - HEART_RATE
+      - GENERAL
+      type: string
+      description: |-
+        * `HYPERTENSION` - Blood pressure
+        * `DIABETES` - Blood glucose
+        * `HEART_RATE` - Heart rate
+        * `GENERAL` - General
+    MedicalDocument:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        patient_id:
+          type: string
+          format: uuid
+        titre:
+          type: string
+          title: Title
+          maxLength: 255
+        type_document:
+          allOf:
+          - $ref: '#/components/schemas/TypeDocumentEnum'
+          title: Document type
+        original_filename:
+          type: string
+          readOnly: true
+        mime_type:
+          type: string
+          readOnly: true
+        file_size:
+          type: integer
+          readOnly: true
+          nullable: true
+        upload_source:
+          allOf:
+          - $ref: '#/components/schemas/UploadSourceEnum'
+          readOnly: true
+        description:
+          type: string
+        date_document:
+          type: string
+          format: date
+          title: Document date
+        uploader_id:
+          type: string
+          format: uuid
+          readOnly: true
+        download_url:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - date_document
+      - download_url
+      - file_size
+      - id
+      - mime_type
+      - original_filename
+      - titre
+      - updated_at
+      - upload_source
+      - uploader_id
+    MedicalDocumentRequest:
+      type: object
+      properties:
+        patient_id:
+          type: string
+          format: uuid
+        titre:
+          type: string
+          minLength: 1
+          title: Title
+          maxLength: 255
+        type_document:
+          allOf:
+          - $ref: '#/components/schemas/TypeDocumentEnum'
+          title: Document type
+        fichier:
+          type: string
+          format: binary
+          writeOnly: true
+        description:
+          type: string
+        date_document:
+          type: string
+          format: date
+          title: Document date
+      required:
+      - date_document
+      - fichier
+      - titre
+    MedicalNote:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        patient_id:
+          type: string
+          format: uuid
+        author_id:
+          type: string
+          format: uuid
+          readOnly: true
+        contenu:
+          type: string
+          title: Content
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - author_id
+      - contenu
+      - created_at
+      - id
+      - updated_at
+    MedicalNoteRequest:
+      type: object
+      properties:
+        patient_id:
+          type: string
+          format: uuid
+        contenu:
+          type: string
+          minLength: 1
+          title: Content
+      required:
+      - contenu
+    MedicalRecord:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        patient_id:
+          type: string
+          format: uuid
+          readOnly: true
+        groupe_sanguin:
+          allOf:
+          - $ref: '#/components/schemas/GroupeSanguinEnum'
+          readOnly: true
+          title: Blood group
+        antecedents_familiaux:
+          type: string
+          readOnly: true
+          title: Family medical history
+        legacy_allergies_text:
+          type: string
+          readOnly: true
+          title: Legacy allergies
+        legacy_chronic_diseases_text:
+          type: string
+          readOnly: true
+          title: Legacy chronic diseases
+        legacy_current_treatments_text:
+          type: string
+          readOnly: true
+          title: Legacy current treatments
+        legacy_medical_notes_text:
+          type: string
+          readOnly: true
+          title: Legacy medical notes
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - antecedents_familiaux
+      - created_at
+      - groupe_sanguin
+      - id
+      - legacy_allergies_text
+      - legacy_chronic_diseases_text
+      - legacy_current_treatments_text
+      - legacy_medical_notes_text
+      - patient_id
+      - updated_at
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          readOnly: true
+      required:
+      - message
+    MyDoctorAssignment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        doctor_profile_id:
+          type: string
+          format: uuid
+          readOnly: true
+        doctor_user_id:
+          type: string
+          format: uuid
+          readOnly: true
+        display_name:
+          type: string
+          readOnly: true
+        speciality:
+          type: string
+          readOnly: true
+        hospital:
+          type: string
+          readOnly: true
+        assigned_at:
+          type: string
+          format: date-time
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/AssignmentStatusEnum'
+          readOnly: true
+      required:
+      - assigned_at
+      - display_name
+      - doctor_profile_id
+      - doctor_user_id
+      - hospital
+      - id
+      - speciality
+      - status
+    MyPatientAssignment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        patient_profile_id:
+          type: string
+          format: uuid
+          readOnly: true
+        patient_user_id:
+          type: string
+          format: uuid
+          readOnly: true
+        display_name:
+          type: string
+          readOnly: true
+        assigned_at:
+          type: string
+          format: date-time
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/AssignmentStatusEnum'
+          readOnly: true
+      required:
+      - assigned_at
+      - display_name
+      - id
+      - patient_profile_id
+      - patient_user_id
+      - status
+    NiveauEnum:
+      enum:
+      - INFO
+      - LOW
+      - MEDIUM
+      - HIGH
+      - CRITICAL
+      type: string
+      description: |-
+        * `INFO` - Info
+        * `LOW` - Low
+        * `MEDIUM` - Medium
+        * `HIGH` - High
+        * `CRITICAL` - Critical
+    Notification:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        type:
+          allOf:
+          - $ref: '#/components/schemas/NotificationTypeEnum'
+          readOnly: true
+        priority:
+          allOf:
+          - $ref: '#/components/schemas/PriorityEnum'
+          readOnly: true
+        title:
+          type: string
+          readOnly: true
+        message:
+          type: string
+          readOnly: true
+        is_read:
+          type: boolean
+          readOnly: true
+        read_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        source_domain:
+          type: string
+          readOnly: true
+        source_type:
+          type: string
+          readOnly: true
+        source_id:
+          type: string
+          format: uuid
+          readOnly: true
+        event_code:
+          type: string
+          readOnly: true
+        metadata:
+          readOnly: true
+      required:
+      - created_at
+      - event_code
+      - id
+      - is_read
+      - message
+      - metadata
+      - priority
+      - read_at
+      - source_domain
+      - source_id
+      - source_type
+      - title
+      - type
+    NotificationTypeEnum:
+      enum:
+      - MEDICAL_ALERT_CREATED
+      - ALERT_ACKNOWLEDGED
+      - ALERT_RESOLVED
+      - ALERT_DISMISSED
+      - SYSTEM
+      type: string
+      description: |-
+        * `MEDICAL_ALERT_CREATED` - Medical alert created
+        * `ALERT_ACKNOWLEDGED` - Alert acknowledged
+        * `ALERT_RESOLVED` - Alert resolved
+        * `ALERT_DISMISSED` - Alert dismissed
+        * `SYSTEM` - System
+    NullEnum:
+      enum:
+      - null
+    Onboarding:
+      type: object
+      properties:
+        is_complete:
+          type: boolean
+        completion_percentage:
+          type: integer
+          maximum: 100
+          minimum: 0
+        missing_fields:
+          type: array
+          items:
+            type: string
+      required:
+      - completion_percentage
+      - is_complete
+      - missing_fields
+    PaginatedAllergyList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Allergy'
+    PaginatedAssignments:
+      type: object
+      properties:
+        count:
+          type: integer
+        next:
+          type: string
+          format: uri
+          nullable: true
+        previous:
+          type: string
+          format: uri
+          nullable: true
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AssignmentHistory'
+      required:
+      - count
+      - next
+      - previous
+      - results
+    PaginatedBloodGlucoseList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BloodGlucose'
+    PaginatedBloodPressureList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BloodPressure'
+    PaginatedChronicDiseaseList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChronicDisease'
+    PaginatedConsultationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Consultation'
+    PaginatedDoctors:
+      type: object
+      properties:
+        count:
+          type: integer
+        next:
+          type: string
+          format: uri
+          nullable: true
+        previous:
+          type: string
+          format: uri
+          nullable: true
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/MyDoctorAssignment'
+      required:
+      - count
+      - next
+      - previous
+      - results
+    PaginatedMedicalAlertList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/MedicalAlert'
+    PaginatedMedicalDocumentList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/MedicalDocument'
+    PaginatedMedicalNoteList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/MedicalNote'
+    PaginatedNotificationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notification'
+    PaginatedPatients:
+      type: object
+      properties:
+        count:
+          type: integer
+        next:
+          type: string
+          format: uri
+          nullable: true
+        previous:
+          type: string
+          format: uri
+          nullable: true
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/MyPatientAssignment'
+      required:
+      - count
+      - next
+      - previous
+      - results
+    PaginatedTreatmentList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Treatment'
+    PasswordResetConfirmRequest:
+      type: object
+      description: Validate a Django reset token and set the user's new password.
+      properties:
+        uid:
+          type: string
+          writeOnly: true
+          minLength: 1
+        token:
+          type: string
+          writeOnly: true
+          minLength: 1
+        new_password:
+          type: string
+          writeOnly: true
+          minLength: 1
+        new_password_confirm:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - new_password
+      - new_password_confirm
+      - token
+      - uid
+    PasswordResetRequest:
+      type: object
+      description: Send reset credentials by email without revealing account existence.
+      properties:
+        email:
+          type: string
+          format: email
+          writeOnly: true
+          minLength: 1
+      required:
+      - email
+    PasswordResetResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+          readOnly: true
+      required:
+      - detail
+    PatchedAlertTransitionRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          maxLength: 1000
+    PatchedAllergyRequest:
+      type: object
+      properties:
+        patient_id:
+          type: string
+          format: uuid
+        nom:
+          type: string
+          minLength: 1
+          title: Name
+          maxLength: 255
+        gravite:
+          allOf:
+          - $ref: '#/components/schemas/AllergyGraviteEnum'
+          title: Severity
+        reaction:
+          type: string
+        is_active:
+          type: boolean
+          title: Active
+        notes:
+          type: string
+    PatchedBloodGlucoseRequest:
+      type: object
+      properties:
+        valeur:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          title: Value
+        unite:
+          allOf:
+          - $ref: '#/components/schemas/UniteEnum'
+          title: Unit
+        type_mesure:
+          allOf:
+          - $ref: '#/components/schemas/TypeMesureEnum'
+          title: Measurement type
+        hba1c:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
+          nullable: true
+        contexte_repas:
+          allOf:
+          - $ref: '#/components/schemas/ContexteRepasEnum'
+          title: Meal context
+        heure_mesure:
+          type: string
+          format: time
+          nullable: true
+          title: Measurement time
+        type_prelevement:
+          allOf:
+          - $ref: '#/components/schemas/TypePrelevementEnum'
+          title: Sample type
+        notes:
+          type: string
+        date_mesure:
+          type: string
+          format: date-time
+          title: Measurement date
+    PatchedBloodPressureRequest:
+      type: object
+      properties:
+        systolique:
+          type: integer
+          maximum: 300
+          minimum: 40
+          title: Systolic
+        diastolique:
+          type: integer
+          maximum: 200
+          minimum: 20
+          title: Diastolic
+        frequence_cardiaque:
+          type: integer
+          maximum: 250
+          minimum: 20
+          nullable: true
+          title: Heart rate
+        measurement_context:
+          $ref: '#/components/schemas/MeasurementContextEnum'
+        position:
+          $ref: '#/components/schemas/PositionEnum'
+        bras_utilise:
+          allOf:
+          - $ref: '#/components/schemas/BrasUtiliseEnum'
+          title: Arm used
+        numero_mesure:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+          title: Measurement number
+        notes:
+          type: string
+        date_mesure:
+          type: string
+          format: date-time
+          title: Measurement date
+    PatchedChronicDiseaseRequest:
+      type: object
+      properties:
+        patient_id:
+          type: string
+          format: uuid
+        nom_maladie:
+          type: string
+          minLength: 1
+          title: Disease name
+          maxLength: 255
+        date_diagnostic:
+          type: string
+          format: date
+          nullable: true
+          title: Diagnosis date
+        date_resolution:
+          type: string
+          format: date
+          nullable: true
+          title: Resolution date
+        gravite:
+          allOf:
+          - $ref: '#/components/schemas/ChronicDiseaseGraviteEnum'
+          title: Severity
+        statut:
+          allOf:
+          - $ref: '#/components/schemas/ChronicDiseaseStatutEnum'
+          title: Status
+        notes:
+          type: string
+    PatchedConsultationRequest:
+      type: object
+      properties:
+        patient_id:
+          type: string
+          format: uuid
+        date_consultation:
+          type: string
+          format: date-time
+          title: Consultation date
+        motif:
+          type: string
+          minLength: 1
+          title: Reason
+        diagnostic:
+          type: string
+          title: Diagnosis
+        symptomes:
+          type: string
+          title: Symptoms
+        observations:
+          type: string
+        notes:
+          type: string
+    PatchedCurrentProfileUpdateRequest:
+      oneOf:
+      - $ref: '#/components/schemas/PatchedPatientProfileWriteRequest'
+      - $ref: '#/components/schemas/PatchedDoctorProfileWriteRequest'
+    PatchedDoctorProfileWriteRequest:
+      type: object
+      properties:
+        specialite:
+          type: string
+          minLength: 1
+          maxLength: 255
+        hopital:
+          type: string
+          minLength: 1
+          maxLength: 255
+        annees_experience:
+          type: integer
+          maximum: 100
+          minimum: 0
+    PatchedMeRequest:
+      type: object
+      description: Serialize the authenticated user and limit editable profile fields.
+      properties:
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        phone:
+          type: string
+          title: Phone number
+          maxLength: 30
+    PatchedMedicalNoteRequest:
+      type: object
+      properties:
+        patient_id:
+          type: string
+          format: uuid
+        contenu:
+          type: string
+          minLength: 1
+          title: Content
+    PatchedPatientProfileWriteRequest:
+      type: object
+      properties:
+        date_naissance:
+          type: string
+          format: date
+        sexe:
+          $ref: '#/components/schemas/PatientProfileWriteSexeEnum'
+        poids:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+        taille:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+    PatchedTreatmentRequest:
+      type: object
+      properties:
+        patient_id:
+          type: string
+          format: uuid
+        nom_medicament:
+          type: string
+          minLength: 1
+          title: Medication name
+          maxLength: 255
+        description:
+          type: string
+        dosage:
+          type: string
+          minLength: 1
+          maxLength: 255
+        frequence:
+          type: string
+          minLength: 1
+          title: Frequency
+          maxLength: 255
+        voie_administration:
+          type: string
+          title: Administration route
+          maxLength: 255
+        date_debut:
+          type: string
+          format: date
+          title: Start date
+        date_fin:
+          type: string
+          format: date
+          nullable: true
+          title: End date
+        statut:
+          allOf:
+          - $ref: '#/components/schemas/TreatmentStatutEnum'
+          title: Status
+        notes:
+          type: string
+    PatientMeResponse:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/ProfileUser'
+        profile_type:
+          type: string
+        profile:
+          $ref: '#/components/schemas/PatientProfileRead'
+        onboarding:
+          $ref: '#/components/schemas/Onboarding'
+      required:
+      - onboarding
+      - profile
+      - profile_type
+      - user
+    PatientProfileRead:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        date_naissance:
+          type: string
+          format: date
+          readOnly: true
+          nullable: true
+          title: Date of birth
+        sexe:
+          readOnly: true
+          nullable: true
+          title: Sex
+          oneOf:
+          - $ref: '#/components/schemas/PatientProfileReadSexeEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        poids:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          readOnly: true
+          nullable: true
+          title: Weight
+        taille:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          readOnly: true
+          nullable: true
+          title: Height
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - date_naissance
+      - id
+      - poids
+      - sexe
+      - taille
+      - updated_at
+    PatientProfileReadSexeEnum:
+      enum:
+      - MALE
+      - FEMALE
+      - OTHER
+      type: string
+      description: |-
+        * `MALE` - Male
+        * `FEMALE` - Female
+        * `OTHER` - Other
+    PatientProfileWriteSexeEnum:
+      enum:
+      - MALE
+      - FEMALE
+      - OTHER
+      type: string
+      description: |-
+        * `MALE` - MALE
+        * `FEMALE` - FEMALE
+        * `OTHER` - OTHER
+    PositionEnum:
+      enum:
+      - SITTING
+      - STANDING
+      - LYING
+      type: string
+      description: |-
+        * `SITTING` - Sitting
+        * `STANDING` - Standing
+        * `LYING` - Lying
+    PriorityEnum:
+      enum:
+      - LOW
+      - NORMAL
+      - HIGH
+      - CRITICAL
+      type: string
+      description: |-
+        * `LOW` - Low
+        * `NORMAL` - Normal
+        * `HIGH` - High
+        * `CRITICAL` - Critical
+    ProfileUser:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        first_name:
+          type: string
+          readOnly: true
+        last_name:
+          type: string
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+          title: Email address
+        phone:
+          type: string
+          readOnly: true
+          title: Phone number
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          readOnly: true
+      required:
+      - email
+      - first_name
+      - id
+      - last_name
+      - phone
+      - role
+    RawBloodPressureSeries:
+      type: object
+      properties:
+        count:
+          type: integer
+        next:
+          type: string
+          format: uri
+          nullable: true
+        previous:
+          type: string
+          format: uri
+          nullable: true
+        unit:
+          type: string
+        granularity:
+          type: string
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BloodPressurePoint'
+      required:
+      - count
+      - granularity
+      - next
+      - previous
+      - results
+      - unit
+    RawGlucoseSeries:
+      type: object
+      properties:
+        count:
+          type: integer
+        next:
+          type: string
+          format: uri
+          nullable: true
+        previous:
+          type: string
+          format: uri
+          nullable: true
+        unit:
+          type: string
+        granularity:
+          type: string
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/GlucosePoint'
+      required:
+      - count
+      - granularity
+      - next
+      - previous
+      - results
+      - unit
+    ReadAllResult:
+      type: object
+      properties:
+        updated_count:
+          type: integer
+          readOnly: true
+      required:
+      - updated_count
+    RegisterRequest:
+      type: object
+      properties:
+        first_name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        last_name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          minLength: 1
+          title: Email address
+          maxLength: 254
+        phone:
+          type: string
+          minLength: 1
+          title: Phone number
+          maxLength: 30
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+        password_confirm:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - email
+      - first_name
+      - last_name
+      - password
+      - password_confirm
+      - phone
+    RegisterV1Response:
+      type: object
+      properties:
+        detail:
+          type: string
+          readOnly: true
+        user:
+          allOf:
+          - $ref: '#/components/schemas/RegistrationUser'
+          readOnly: true
+        profile:
+          allOf:
+          - $ref: '#/components/schemas/RegistrationProfile'
+          readOnly: true
+        onboarding:
+          allOf:
+          - $ref: '#/components/schemas/RegistrationOnboarding'
+          readOnly: true
+      required:
+      - detail
+      - onboarding
+      - profile
+      - user
+    RegistrationOnboarding:
+      type: object
+      properties:
+        is_complete:
+          type: boolean
+          readOnly: true
+        completion_percentage:
+          type: integer
+          readOnly: true
+        missing_fields:
+          type: array
+          items:
+            type: string
+          readOnly: true
+      required:
+      - completion_percentage
+      - is_complete
+      - missing_fields
+    RegistrationProfile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        profile_type:
+          type: string
+          readOnly: true
+      required:
+      - id
+      - profile_type
+    RegistrationUser:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          readOnly: true
+      required:
+      - email
+      - id
+      - role
+    RoleEnum:
+      enum:
+      - PATIENT
+      - DOCTOR
+      - ADMIN
+      type: string
+      description: |-
+        * `PATIENT` - Patient
+        * `DOCTOR` - Doctor
+        * `ADMIN` - Admin
+    SourceEnum:
+      enum:
+      - SYSTEM_RULE
+      - DOCTOR
+      - MANUAL
+      type: string
+      description: |-
+        * `SYSTEM_RULE` - System rule
+        * `DOCTOR` - Doctor
+        * `MANUAL` - Manual
+    SourceMesureEnum:
+      enum:
+      - MANUAL
+      - DEVICE
+      - CONNECTED_DEVICE
+      type: string
+      description: |-
+        * `MANUAL` - Manual
+        * `DEVICE` - Device
+        * `CONNECTED_DEVICE` - Connected device
+    Summary:
+      type: object
+      properties:
+        period:
+          type: object
+          additionalProperties: {}
+        latest_blood_pressure:
+          type: object
+          additionalProperties: {}
+          nullable: true
+        latest_glucose:
+          type: object
+          additionalProperties: {}
+          nullable: true
+        latest_hba1c:
+          type: object
+          additionalProperties: {}
+          nullable: true
+        measurement_counts:
+          type: object
+          additionalProperties: {}
+        averages:
+          type: object
+          additionalProperties: {}
+        alerts:
+          type: object
+          additionalProperties: {}
+        last_measurement_at:
+          type: string
+          format: date-time
+          nullable: true
+        disclaimer:
+          type: string
+      required:
+      - alerts
+      - averages
+      - disclaimer
+      - last_measurement_at
+      - latest_blood_pressure
+      - latest_glucose
+      - latest_hba1c
+      - measurement_counts
+      - period
+    TokenRefreshResponse:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          readOnly: true
+      required:
+      - access
+      - refresh
+    Treatment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        patient_id:
+          type: string
+          format: uuid
+        nom_medicament:
+          type: string
+          title: Medication name
+          maxLength: 255
+        description:
+          type: string
+        dosage:
+          type: string
+          maxLength: 255
+        frequence:
+          type: string
+          title: Frequency
+          maxLength: 255
+        voie_administration:
+          type: string
+          title: Administration route
+          maxLength: 255
+        date_debut:
+          type: string
+          format: date
+          title: Start date
+        date_fin:
+          type: string
+          format: date
+          nullable: true
+          title: End date
+        prescriber_id:
+          type: string
+          format: uuid
+          readOnly: true
+        statut:
+          allOf:
+          - $ref: '#/components/schemas/TreatmentStatutEnum'
+          title: Status
+        notes:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - date_debut
+      - dosage
+      - frequence
+      - id
+      - nom_medicament
+      - prescriber_id
+      - updated_at
+    TreatmentRequest:
+      type: object
+      properties:
+        patient_id:
+          type: string
+          format: uuid
+        nom_medicament:
+          type: string
+          minLength: 1
+          title: Medication name
+          maxLength: 255
+        description:
+          type: string
+        dosage:
+          type: string
+          minLength: 1
+          maxLength: 255
+        frequence:
+          type: string
+          minLength: 1
+          title: Frequency
+          maxLength: 255
+        voie_administration:
+          type: string
+          title: Administration route
+          maxLength: 255
+        date_debut:
+          type: string
+          format: date
+          title: Start date
+        date_fin:
+          type: string
+          format: date
+          nullable: true
+          title: End date
+        statut:
+          allOf:
+          - $ref: '#/components/schemas/TreatmentStatutEnum'
+          title: Status
+        notes:
+          type: string
+      required:
+      - date_debut
+      - dosage
+      - frequence
+      - nom_medicament
+    TreatmentStatutEnum:
+      enum:
+      - ACTIVE
+      - STOPPED
+      - COMPLETED
+      type: string
+      description: |-
+        * `ACTIVE` - Active
+        * `STOPPED` - Stopped
+        * `COMPLETED` - Completed
+    TrendEnum:
+      enum:
+      - UP
+      - DOWN
+      - STABLE
+      - INSUFFICIENT_DATA
+      type: string
+      description: |-
+        * `UP` - UP
+        * `DOWN` - DOWN
+        * `STABLE` - STABLE
+        * `INSUFFICIENT_DATA` - INSUFFICIENT_DATA
+    Trends:
+      type: object
+      properties:
+        window_days:
+          type: integer
+        minimum_measurements:
+          type: integer
+        indicators:
+          type: object
+          additionalProperties: {}
+        disclaimer:
+          type: string
+      required:
+      - disclaimer
+      - indicators
+      - minimum_measurements
+      - window_days
+    TypeDocumentEnum:
+      enum:
+      - ORDONNANCE
+      - ANALYSE
+      - RADIO
+      - COMPTE_RENDU
+      - CERTIFICAT
+      - AUTRE
+      type: string
+      description: |-
+        * `ORDONNANCE` - Ordonnance
+        * `ANALYSE` - Analyse
+        * `RADIO` - Radio
+        * `COMPTE_RENDU` - Compte rendu
+        * `CERTIFICAT` - Certificat
+        * `AUTRE` - Autre
+    TypeMesureEnum:
+      enum:
+      - FASTING
+      - POST_MEAL
+      - RANDOM
+      type: string
+      description: |-
+        * `FASTING` - Fasting
+        * `POST_MEAL` - Post meal
+        * `RANDOM` - Random
+    TypePrelevementEnum:
+      enum:
+      - CAPILLARY
+      - LABORATORY
+      - SENSOR
+      type: string
+      description: |-
+        * `CAPILLARY` - Capillary
+        * `LABORATORY` - Laboratory
+        * `SENSOR` - Sensor
+    UniteEnum:
+      enum:
+      - G_PER_L
+      - MG_PER_DL
+      type: string
+      description: |-
+        * `G_PER_L` - g/L
+        * `MG_PER_DL` - mg/dL
+    UnreadCount:
+      type: object
+      properties:
+        unread_count:
+          type: integer
+          readOnly: true
+      required:
+      - unread_count
+    UpdatedCurrentProfileResponse:
+      oneOf:
+      - $ref: '#/components/schemas/PatientMeResponse'
+      - $ref: '#/components/schemas/DoctorMeResponse'
+      discriminator:
+        propertyName: profile_type
+        mapping:
+          PATIENT: '#/components/schemas/PatientMeResponse'
+          DOCTOR: '#/components/schemas/DoctorMeResponse'
+    UploadSourceEnum:
+      enum:
+      - PATIENT
+      - DOCTOR
+      - LEGACY
+      type: string
+      description: |-
+        * `PATIENT` - Patient
+        * `DOCTOR` - Doctor
+        * `LEGACY` - Legacy
+    VersionedTokenRefreshRequest:
+      type: object
+      description: Reject refresh tokens issued for an older user token version.
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+      required:
+      - refresh
+    V1Error:
+      type: object
+      required:
+      - code
+      - detail
+      properties:
+        code:
+          type: string
+          example: validation_error
+        detail:
+          type: string
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+        retry_after:
+          type: integer
+          minimum: 0
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

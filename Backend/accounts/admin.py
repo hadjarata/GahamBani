@@ -1,11 +1,14 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
+from .admin_forms import TokenRevokingAdminPasswordChangeForm
 from .models import User
 
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
+    change_password_form = TokenRevokingAdminPasswordChangeForm
+    readonly_fields = ('last_login', 'created_at', 'updated_at')
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
         ('Personal info', {'fields': ('first_name', 'last_name', 'phone', 'role')}),
