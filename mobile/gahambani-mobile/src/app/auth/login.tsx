@@ -34,7 +34,8 @@ const errorMessages = {
 function validate(email: string, password: string): FieldErrors {
   const errors: FieldErrors = {};
   const normalizedEmail = email.trim();
-  errors.email = validateEmailAddress(normalizedEmail);
+  const emailError = validateEmailAddress(normalizedEmail);
+  if (emailError) errors.email = emailError;
   if (!password) errors.password = 'Saisissez votre mot de passe.';
   return errors;
 }
@@ -74,7 +75,7 @@ export default function LoginScreen() {
     if (loading) return;
     const errors = validate(email, password);
     setFieldErrors(errors);
-    if (Object.keys(errors).length > 0) return;
+    if (Object.values(errors).some(Boolean)) return;
     Keyboard.dismiss();
     void submit({ email: email.trim().toLowerCase(), password });
   }

@@ -1,5 +1,5 @@
 import { type PropsWithChildren, useMemo } from 'react';
-import { ScrollView, StyleSheet, type ViewStyle } from 'react-native';
+import { ScrollView, StyleSheet, View, type ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppTheme } from '@/theme';
 
@@ -16,13 +16,16 @@ export function Screen({ children, scroll = false, contentStyle }: Props) {
   }), [theme]);
   return (
     <SafeAreaView style={styles.safe}>
-      <ScrollView
-        scrollEnabled={scroll}
-        contentContainerStyle={[styles.content, contentStyle]}
-        keyboardShouldPersistTaps="handled"
-      >
-        {children}
-      </ScrollView>
+      {scroll ? (
+        <ScrollView
+          contentContainerStyle={[styles.content, contentStyle]}
+          keyboardShouldPersistTaps="handled"
+        >
+          {children}
+        </ScrollView>
+      ) : (
+        <View style={[styles.content, contentStyle]}>{children}</View>
+      )}
     </SafeAreaView>
   );
 }

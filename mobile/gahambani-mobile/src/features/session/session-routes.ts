@@ -4,6 +4,8 @@ export const sessionRoutes = {
   login: '/auth/login' as Href,
   register: '/auth/register' as Href,
   forgotPassword: '/auth/forgot-password' as Href,
+  resetPasswordConfirm: '/reset-password/confirm' as Href,
+  notifications: '/notifications' as Href,
   patientOnboarding: '/onboarding/health' as Href,
   patientHome: '/patient' as Href,
   doctorHome: '/doctor' as Href,

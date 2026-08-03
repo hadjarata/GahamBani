@@ -36,13 +36,15 @@ function validate(values: RegisterRequest): FieldErrors {
   if (!values.last_name.trim()) errors.last_name = 'Saisissez votre nom.';
   else if (values.last_name.trim().length > 150) errors.last_name = 'Le nom est trop long.';
 
-  errors.email = validateEmailAddress(values.email);
+  const emailError = validateEmailAddress(values.email);
+  if (emailError) errors.email = emailError;
 
   const phone = values.phone.trim();
   if (!phone) errors.phone = 'Saisissez votre numéro de téléphone.';
   else if (phone.length > 30) errors.phone = 'Le numéro ne peut pas dépasser 30 caractères.';
 
-  errors.password = validateNewPassword(values.password);
+  const passwordError = validateNewPassword(values.password);
+  if (passwordError) errors.password = passwordError;
   if (!values.password_confirm) {
     errors.password_confirm = 'Confirmez votre mot de passe.';
   } else if (values.password !== values.password_confirm) {
@@ -101,7 +103,7 @@ export default function RegisterScreen() {
     if (loading) return;
     const validationErrors = validate(values);
     setFieldErrors(validationErrors);
-    if (Object.keys(validationErrors).length > 0) return;
+    if (Object.values(validationErrors).some(Boolean)) return;
     Keyboard.dismiss();
     void submit({
       ...values,
